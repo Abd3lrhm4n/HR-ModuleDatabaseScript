@@ -21,7 +21,8 @@ NationalID varchar(15) ,
 JobTitleID int ,
 DepartmentID int , 
 StaffID int , 
-DoctorID int 
+DoctorID int ,
+WorkTimeID int
 )
 Go 
 Create table TbJobTitles
@@ -67,6 +68,11 @@ go
 Alter table TbEmployees 
 add constraint fk_TbEmployees_TbDoctors foreign key (DoctorID) references TbDoctors(ID)
 go 
+
+--add foregin key for workTime
+Alter table TbEmployees
+add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references TbWorkTimes(ID)
+
 
 --====================================
 -------------TbContactTypes-----------
@@ -173,6 +179,7 @@ GO
 --====================================
 -------------TbAttendaceDays-----------
 --====================================
+
 SET ANSI_NULLS ON
 GO
 
@@ -180,12 +187,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbAttendaceDays](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[AttendaceDaysID] [int] IDENTITY(1,1) NOT NULL,
 	[Date] [date] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbAttendaceDay] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+	[AttendaceDaysID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -203,12 +210,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbVacationTypes](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[VacationTypesID] [int] IDENTITY(1,1) NOT NULL,
 	[Type] [nvarchar](50) NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbVacationType] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+	[VacationTypesID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -227,7 +234,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbAttendances](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[AttendancesID] [int] IDENTITY(1,1) NOT NULL,
 	[AttendDayID] [int] NULL,
 	[EmployeeID] [int] NULL,
 	[From] [datetime] NULL,
@@ -238,7 +245,7 @@ CREATE TABLE [dbo].[TbAttendances](
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbAttendance] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+	[AttendancesID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -263,14 +270,14 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbEmployeeVacations](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[EmployeeVacationID] [int] IDENTITY(1,1) NOT NULL,
 	[Vtype] [int] NULL,
 	[Days] [int] NULL,
 	[EmployeeID] [int] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbEmployeeVacation] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+	[EmployeeVacationID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -296,29 +303,68 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbTakeVacations](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[TakeVacationsID] [int] IDENTITY(1,1) NOT NULL,
 	[DateTacked] [date] NULL,
-	[EmployeeID] [int] NULL,
-	[VacationTypeID] [int] NULL,
+	[EmployeeVacationID] [int] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbTakeVacation] PRIMARY KEY CLUSTERED 
 (
-	[ID] ASC
+	[TakeVacationsID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
 ALTER TABLE [dbo].[TbTakeVacations] ADD  CONSTRAINT [DF_TbTakeVacations_Flag]  DEFAULT ('A') FOR [Flag]
 GO
+/*
+-----------------------
+ReadME!
+I remove FK form TakeVacation form VacationType
+and I Add Fk for EmployeeTable
+-----------------------
+*/
+--ALTER TABLE [dbo].[TbTakeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbTakeVacation_Tb] FOREIGN KEY([VacationTypeID])
+--REFERENCES [dbo].[TbVacationTypes] ([ID])
+--GO
 
-ALTER TABLE [dbo].[TbTakeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbTakeVacation_TbVacationType] FOREIGN KEY([VacationTypeID])
-REFERENCES [dbo].[TbVacationTypes] ([ID])
-GO
-
-ALTER TABLE [dbo].[TbTakeVacations] CHECK CONSTRAINT [FK_TbTakeVacation_TbVacationType]
-GO
+ALTER TABLE [dbo].[TbTakeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbEmployeeVacation_Tb] FOREIGN KEY([EmployeeVacationID])
+REFERENCES [dbo].[TbEmployeeVacations] ([ID])
 
 
+
+--ALTER TABLE [dbo].[TbTakeVacations] CHECK CONSTRAINT [FK_TbTakeVacation_TbVacationType]
+--GO
+--====================================
+-------------TbWorkTimes-----------
+--====================================
+create table [dbo].[TbWorkTimes]
+(WorkTimeID int  identity(1,1) not null,
+StartTime time,
+LeaveTime time,
+StaffName nvarchar(50),
+Flag char(1) default 'A',
+ CONSTRAINT [PK_TbWorkTimes] PRIMARY KEY CLUSTERED 
+(
+	[WorkTimeID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+--====================================
+-------------TbFixedVacations-----------
+--====================================
+create table [dbo].[TbFixedVacations]
+(
+FixedVacationID int identity(1,1) not null,
+FixedVacationName nvarchar(50),
+[From] datetime,
+[To] datetime,
+Flag char(1) default 'A',
+
+ CONSTRAINT [PK_TbFixedVacations] PRIMARY KEY CLUSTERED 
+(
+	FixedVacationID ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+Go
 
 
 /*=================================================================================
@@ -1944,7 +1990,7 @@ CREATE PROCEDURE Sp_AttendancesReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbAttendances WHERE ID = @Id)
+    IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
         BEGIN
             SELECT * FROM TbAttendances WHERE ID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
@@ -2025,7 +2071,7 @@ CREATE PROCEDURE Sp_AttendancesUpdate @Id INT,
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbAttendances WHERE ID = @Id)
+        IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
             BEGIN
               IF @AttendDayID >= 0 AND @EmployeeID NOT IN('', ' ', NULL) AND @From NOT IN('', ' ', NULL)
 					 AND @To NOT IN('', ' ', NULL) AND @Latenees NOT IN('', ' ', NULL) AND @LeaveEarly NOT IN('', ' ', NULL) 
@@ -2041,7 +2087,7 @@ BEGIN TRY
 					LeaveEarly=@LeaveEarly,
 					OverTime=@OverTime,
 					Flag=@Flag
-						  WHERE ID = @Id
+						  WHERE AttendDayID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -2072,9 +2118,9 @@ create procedure Sp_AttendancesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbAttendances WHERE ID = @Id)
+            IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
                 BEGIN
-                    UPDATE TbAttendances SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbAttendances SET Flag = 'D' WHERE AttendDayID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -2119,9 +2165,9 @@ create procedure Sp_AttendaceDaysReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbAttendaceDays WHERE ID = @Id)
+    IF EXISTS (SELECT AttendaceDaysID FROM TbAttendaceDays WHERE AttendaceDaysID = @Id)
         BEGIN
-            SELECT * FROM TbAttendaceDays WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbAttendaceDays WHERE AttendaceDaysID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -2183,11 +2229,11 @@ create procedure Sp_AttendaceDayUpdate
 as 
 Begin try 
 	begin transaction 
-		if exists (select  ID from TbAttendaceDays where  ID = @ID )	
+		if exists (select  AttendaceDaysID from TbAttendaceDays where  [AttendaceDaysID] = @ID )	
 			begin 
 				if @ID <> 0 and @Date not in ('',' ',null)
 					begin
-						update TbAttendaceDays 	set	[Date]=@Date, Flag = @Flag	where ID =@ID
+						update TbAttendaceDays 	set	[Date]=@Date, Flag = @Flag	where AttendaceDaysID =@ID
 						select @Message =1
 					end
 				else
@@ -2219,9 +2265,9 @@ create procedure Sp_AttendaceDayDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select ID from TbAttendaceDays where ID =@ID)	
+		if  exists (select AttendaceDaysID from TbAttendaceDays where AttendaceDaysID =@ID)	
 			begin
-	 			update TbAttendaceDays set Flag = 'D' where ID =@ID
+	 			update TbAttendaceDays set Flag = 'D' where AttendaceDaysID =@ID
 	 			select @Message =1 
 	 		end 
 	 	else 
@@ -2264,9 +2310,9 @@ create procedure Sp_EmployeeVacationsReadByID
 @ID int 
 as
 begin try
-	if exists (select ID from TbEmployeeVacations where  ID =@ID)
+	if exists (select EmployeeVacationID from TbEmployeeVacations where  EmployeeVacationID =@ID)
 		begin
-			select * from TbEmployeeVacations where ID=@ID and Flag not like 'D'
+			select * from TbEmployeeVacations where EmployeeVacationID=@ID and Flag not like 'D'
 			select @Message =1 
 		end
 	Else
@@ -2330,11 +2376,11 @@ create procedure Sp_EmployeeVacationsUpdate
 as
 begin try
 	begin transaction
-		if exists (select  ID from TbEmployeeVacations  where ID =@ID )
+		if exists (select  EmployeeVacationID from TbEmployeeVacations  where EmployeeVacationID =@ID )
 			begin
 				if @ID <> 0 and @VType not in ('',' ',null)and @Flag not in ('',' ',null ) and @Days not in ('',' ',null)and @EmployeeID not in ('',' ',null)
 					begin
-						update TbEmployeeVacations set [Vtype] =@VType,	[Days]=@Days, [EmployeeID]=@EmployeeID,	Flag = @Flag where ID =@ID
+						update TbEmployeeVacations set [Vtype] =@VType,	[Days]=@Days, [EmployeeID]=@EmployeeID,	Flag = @Flag where EmployeeVacationID =@ID
 					end 
 				else
 					begin
@@ -2364,9 +2410,9 @@ create procedure Sp_EmployeeVacationsDelete
 as 
 Begin Try
 	begin transaction 
-		if exists (select ID from TbEmployeeVacations where ID =@ID)	
+		if exists (select EmployeeVacationID from TbEmployeeVacations where EmployeeVacationID =@ID)	
 	 		begin
-				update TbEmployeeVacations set Flag = 'D' where ID =@ID
+				update TbEmployeeVacations set Flag = 'D' where EmployeeVacationID =@ID
 				select @Message =1 
 	 		end
 		 else 
@@ -2409,9 +2455,9 @@ create procedure Sp_TakeVacationsReadByID
 @ID int 
 as
 begin try
-	if exists (select ID from TbTakeVacations where  ID =@ID)
+	if exists (select TakeVacationsID from TbTakeVacations where  TakeVacationsID =@ID)
 		begin
-			select * from TbTakeVacations where ID=@ID and Flag not like 'D'
+			select * from TbTakeVacations where TakeVacationsID=@ID and Flag not like 'D'
 			select @Message =1 
 		end
 	Else
@@ -2477,11 +2523,11 @@ create procedure Sp_TakeVacationsUpdate
 as
 begin try
 	begin transaction
-		if exists (select  ID from TbTakeVacations  where ID =@ID )
+		if exists (select  TakeVacationsID from TbTakeVacations  where TakeVacationsID =@ID )
 			begin
 				if @ID <> 0 and @DataTacked not in ('',' ',null)and @Flag not in ('',' ',null ) and @VacationTypeID not in ('',' ',null)and @EmployeeID not in ('',' ',null)
 					begin
-						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where ID =@ID
+						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where TakeVacationsID =@ID
 					end 
 				else
 					begin
@@ -2511,9 +2557,9 @@ create procedure Sp_TakeVacationsDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select ID from TbTakeVacations where ID =@ID)	
+		if  exists (select TakeVacationsID from TbTakeVacations where TakeVacationsID =@ID)	
 	 		begin
-				update TbTakeVacations set Flag = 'D' where ID =@ID
+				update TbTakeVacations set Flag = 'D' where TakeVacationsID =@ID
 				select @Message =1 
 			 end
 	 	else 
@@ -2557,7 +2603,7 @@ create procedure Sp_VacationTypesReadByID
 @ID int 
 as
 begin try
-	if exists (select ID from TbVacationTypes where  ID =@ID)
+	if exists (select VacationTypesID from TbVacationTypes where  VacationTypesID =@ID)
 		begin
 			select * from TbVacationTypes where ID=@ID and Flag not like 'D'
 			select @Message =1 
@@ -2621,11 +2667,12 @@ create procedure Sp_VacationTypesUpdate
 as
 begin try
 	begin transaction
-		if exists (select  ID from TbVacationTypes  where ID =@ID )
+		if exists (select  VacationTypesID from TbVacationTypes  where VacationTypesID =@ID )
 			begin
 				if @ID <> 0 and @Type not in ('',' ',null)and @Flag not in ('',' ',null )	
 					begin
 						update TbVacationTypes set [Type] =@Type, Flag = @Flag
+						where  VacationTypesID =@ID
 					end 
 				else
 					begin
@@ -2656,9 +2703,327 @@ create procedure Sp_VacationTypesDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select ID from TbVacationTypes where ID =@ID)	
+		if  exists (select VacationTypesID from TbVacationTypes where VacationTypesID =@ID)	
 	 		begin
-				update TbVacationTypes set Flag ='D' where ID =@ID
+				update TbVacationTypes set Flag ='D' where VacationTypesID =@ID
+				select @Message =1 
+	 		end
+	 	else 
+			begin
+				select @Message =2
+			end
+	COMMIT TRANSACTION
+end Try
+begin catch
+	if @@ERROR <>0
+		begin 
+			rollback transaction 
+			select @Message =3 
+			print Error_message()
+		end
+end catch
+go
+/*=================================================================================
+								TbWorkTimes proc
+===================================================================================*/
+-------------Read all Store Procedure-----------------------
+create procedure Sp_WorkTimesReadAll
+@Message tinyint out
+as 
+begin try
+	select * from TbWorkTimes where Flag not like 'D'
+	select @Message =1
+end try
+
+begin catch
+	if @@ERROR <>0
+		begin
+			select @Message =3 
+			Print Error_message()
+		end
+end catch
+go
+-------------Read By Id Store Procedure---------------------
+create procedure Sp_WorkTimesReadByID
+@Message tinyint out,
+@ID int 
+as
+begin try
+	if exists (select WorkTimeID from TbWorkTimes where  WorkTimeID =@ID)
+		begin
+			select * from TbWorkTimes where WorkTimeID=@ID and Flag not like 'D'
+			select @Message =1 
+		end
+	Else
+		begin
+			select @Message = 0
+		end
+end try 
+
+begin catch
+	if @@ERROR <>0
+		begin
+			select @Message =3 
+			print error_message()
+		end  
+end catch
+go
+-------Insert Store Procedure--------------
+create procedure Sp_WorkTimesInsert
+@Message tinyint out,
+@StartTime time,
+@LeaveTime time,
+@StaffName nvarchar(50),
+@Flag CHAR(1) = 'A'
+as
+begin try
+	begin transaction
+		if not exists (select  [StartTime] from TbWorkTimes where [StartTime] =@StartTime )
+			begin
+				If @StaffName not in ('',' ',null) and @StartTime not in ('',' ', null)
+					begin 
+						insert into TbWorkTimes(StartTime,LeaveTime,StaffName, Flag)
+						 values (@StartTime, @LeaveTime,@StaffName,@Flag)
+						select @Message =1 
+					end
+	  			else
+					begin 
+						select @message =0
+					end
+   			end
+	   	else
+			begin
+				select @message =2
+			end
+	commit transaction
+end try 
+
+begin catch
+	if @@ERROR <>0
+		begin
+			rollback transaction 
+			select @Message = 3
+			print Error_message()
+		end
+end catch
+go
+-------Update Store procedure-------------- 
+create procedure Sp_WorkTimesUpdate
+@ID int ,
+@Message tinyint out,
+@StartTime time,
+@LeaveTime time,
+@StaffName nvarchar(50),
+@Flag CHAR(1) = 'A'
+as
+begin try
+	begin transaction
+		if exists (select  WorkTimeID from TbWorkTimes  where WorkTimeID =@ID )
+			begin
+				if @ID <> 0 and @StaffName not in ('',' ',null)and @Flag not in ('',' ',null )	
+					begin
+						update TbWorkTimes set StartTime =@StartTime,
+						LeaveTime=@LeaveTime,
+						StaffName=@StaffName,
+						 Flag = @Flag
+						 where WorkTimeID =@ID
+					end 
+				else
+					begin
+						select @Message =0 
+					end
+	 		end
+	 	else 
+			begin
+				select @Message =2
+			end
+	COMMIT TRANSACTION
+end try
+
+begin catch
+	if @@ERROR <>0
+		begin 
+			rollback transaction 
+			select @Message =3 
+			print Error_message()
+		end
+end catch
+go
+
+-------Delete Store procedure-------------- 
+create procedure Sp_WorkTimesDelete 
+@Message tinyint out,
+@StartTime time,
+@LeaveTime time,
+@StaffName nvarchar(50),
+@Flag CHAR(1) = 'A',
+@ID int
+as 
+Begin Try
+	begin transaction 
+		if  exists (select WorkTimeID from TbWorkTimes where WorkTimeID =@ID)	
+	 		begin
+				update TbWorkTimes
+				 set Flag ='D' where WorkTimeID =@ID
+				select @Message =1 
+	 		end
+	 	else 
+			begin
+				select @Message =2
+			end
+	COMMIT TRANSACTION
+end Try
+begin catch
+	if @@ERROR <>0
+		begin 
+			rollback transaction 
+			select @Message =3 
+			print Error_message()
+		end
+end catch
+go
+/*=================================================================================
+								TbFixedVacations proc
+===================================================================================*/
+-------------Read all Store Procedure-----------------------
+create procedure Sp_FixedVacationsReadAll
+@Message tinyint out
+as 
+begin try
+	select * from TbFixedVacations where Flag not like 'D'
+	select @Message =1
+end try
+
+begin catch
+	if @@ERROR <>0
+		begin
+			select @Message =3 
+			Print Error_message()
+		end
+end catch
+go
+-------------Read By Id Store Procedure---------------------
+create procedure Sp_FixedVacationsReadByID
+@Message tinyint out,
+@ID int 
+as
+begin try
+	if exists (select FixedVacationID  from TbFixedVacations where  FixedVacationID =@ID)
+		begin
+			select * from TbFixedVacations where FixedVacationID=@ID and Flag not like 'D'
+			select @Message =1 
+		end
+	Else
+		begin
+			select @Message = 0
+		end
+end try 
+
+begin catch
+	if @@ERROR <>0
+		begin
+			select @Message =3 
+			print error_message()
+		end  
+end catch
+go
+-------Insert Store Procedure--------------
+create procedure Sp_FixedVacationsInsert
+@Message tinyint out,
+@FixedVacationName nvarchar(50),
+@From datetime,
+@To datetime,
+@Flag CHAR(1) = 'A'
+as
+begin try
+	begin transaction
+		if not exists (select  [FixedVacationName] from TbFixedVacations where [FixedVacationName] =@FixedVacationName )
+			begin
+				If @FixedVacationName not in ('',' ',null) and @From not in ('',' ', null)
+					begin 
+						insert into TbFixedVacations(FixedVacationName,[From],[To], Flag)
+						 values (@FixedVacationName, @From,@To,@Flag)
+						select @Message =1 
+					end
+	  			else
+					begin 
+						select @message =0
+					end
+   			end
+	   	else
+			begin
+				select @message =2
+			end
+	commit transaction
+end try 
+
+begin catch
+	if @@ERROR <>0
+		begin
+			rollback transaction 
+			select @Message = 3
+			print Error_message()
+		end
+end catch
+go
+-------Update Store procedure-------------- 
+create procedure Sp_FixedVacationsUpdate
+@ID int ,
+@Message tinyint out,
+@FixedVacationName nvarchar(50),
+@From datetime,
+@To datetime,
+@Flag CHAR(1) = 'A'
+as
+begin try
+	begin transaction
+		if exists (select  FixedVacationID from TbFixedVacations  where FixedVacationID =@ID )
+			begin
+				if @ID <> 0 and @FixedVacationName not in ('',' ',null)and @Flag not in ('',' ',null )	
+					begin
+						update TbFixedVacations set FixedVacationName =@FixedVacationName,
+						[From]=@From,
+						[To]=@To,
+						 Flag = @Flag
+						 where FixedVacationID=@ID
+					end 
+				else
+					begin
+						select @Message =0 
+					end
+	 		end
+	 	else 
+			begin
+				select @Message =2
+			end
+	COMMIT TRANSACTION
+end try
+
+begin catch
+	if @@ERROR <>0
+		begin 
+			rollback transaction 
+			select @Message =3 
+			print Error_message()
+		end
+end catch
+go
+
+-------Delete Store procedure-------------- 
+create procedure Sp_FixedVacationsDelete 
+@ID int ,
+@Message tinyint out,
+@FixedVacationName nvarchar(50),
+@From datetime,
+@To datetime,
+@Flag CHAR(1) = 'A'
+as 
+Begin Try
+	begin transaction 
+		if  exists (select FixedVacationID from TbFixedVacations where FixedVacationID =@ID)	
+	 		begin
+				update TbFixedVacations
+				 set Flag ='D' where FixedVacationID =@ID
 				select @Message =1 
 	 		end
 	 	else 
