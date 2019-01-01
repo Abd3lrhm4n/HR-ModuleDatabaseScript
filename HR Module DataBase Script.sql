@@ -81,6 +81,7 @@ add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references T
 CREATE TABLE TbContactTypes(
     ID INT IDENTITY(1,1) NOT NULL,
     ContactType NVARCHAR(100) NOT NULL,
+    ContactConstraint NVARCHAR(500) NOT NULL,
     Flag CHAR(1) NOT NULL
     -----------------------------------------
     CONSTRAINT PK_TbContactTypes PRIMARY KEY (ID)
@@ -110,14 +111,14 @@ GO
 -------------TbSalaryTypes------------
 --====================================
 
-CREATE TABLE TbSalaryTypes(
-    ID INT IDENTITY(1,1) NOT NULL,
-    SalaryType NVARCHAR(150) NOT NULL,
-    Flag CHAR(1) NOT NULL
-    -----------------------------------
-    CONSTRAINT PK_TbSalaryTypes PRIMARY KEY(ID)
-)
-GO
+-- CREATE TABLE TbSalaryTypes(
+--     ID INT IDENTITY(1,1) NOT NULL,
+--     SalaryType NVARCHAR(150) NOT NULL,
+--     Flag CHAR(1) NOT NULL
+--     -----------------------------------
+--     CONSTRAINT PK_TbSalaryTypes PRIMARY KEY(ID)
+-- )
+-- GO
 
 --====================================
 -------------TbSalaries-----------------
@@ -139,7 +140,7 @@ CREATE TABLE TbSalaries (
     SalaryTypeID INT NOT NULL
     ------------------------------------
     CONSTRAINT PK_TbSalary PRIMARY KEY(ID),
-    CONSTRAINT FK_TbSalary_TbSalaryTypes FOREIGN KEY(SalaryTypeID) REFERENCES TbSalaryTypes(ID),
+    -- CONSTRAINT FK_TbSalary_TbSalaryTypes FOREIGN KEY(SalaryTypeID) REFERENCES TbSalaryTypes(ID),
     CONSTRAINT FK_TbSalary_TbEmployees FOREIGN KEY(EmployeeID) REFERENCES TbEmployees(ID) 
 )
 GO
@@ -151,6 +152,8 @@ GO
 CREATE TABLE TbRewardTypes(
     ID INT IDENTITY(1,1) NOT NULL,
     RewardType NVARCHAR(200) NOT NULL,
+    --Defualt quantity for type of reward
+    DefualtQuantity DECIMAL(9,2),
     Flag CHAR(1) NOT NULL
     -----------------------------------
     CONSTRAINT PK_TbRewardTypes PRIMARY KEY(ID)
@@ -417,6 +420,7 @@ GO
 CREATE PROCEDURE Sp_ContactTypesInsert 
 @ContactType NVARCHAR(100),
 @Flag CHAR(1) = 'A',
+@ContactConstraint NVARCHAR(500),
 @Message TINYINT OUT  --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -427,7 +431,7 @@ BEGIN TRY
                 --Make sure the value not empty or null
                 IF @ContactType NOT IN('', ' ', NULL)
                     BEGIN
-                        INSERT INTO TbContactTypes (ContactType, Flag) VALUES (@ContactType, @Flag)
+                        INSERT INTO TbContactTypes (ContactType, ContactConstraint,Flag) VALUES (@ContactType, @ContactConstraint,@Flag)
                         SELECT @Message = 1
                     END
                 ELSE
@@ -455,6 +459,7 @@ GO
 CREATE PROCEDURE Sp_ContactTypesUpdate 
 @Id int, 
 @ContactType NVARCHAR(100),
+@ContactConstraint NVARCHAR(500),
 @Flag CHAR(1) = 'A',
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
@@ -464,7 +469,7 @@ BEGIN TRY
             BEGIN
                 IF @ContactType NOT IN('', ' ', NULL)
                     BEGIN
-                        UPDATE TbContactTypes SET ContactType = @ContactType, Flag = @Flag WHERE ID = @Id
+                        UPDATE TbContactTypes SET ContactType = @ContactType, ContactConstraint = @ContactConstraint,Flag = @Flag WHERE ID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -684,153 +689,153 @@ GO
 								TbSalaryTypes proc
 ===================================================================================*/
 -------------Read all Store Procedure-----------------------
-CREATE PROCEDURE Sp_SalaryTypesReadAll 
-@Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
-AS
-BEGIN TRY
-    SELECT * FROM TbSalaryTypes WHERE Flag NOT LIKE 'D'
-    SELECT @Message = 1 
-END TRY 
-BEGIN CATCH
-    IF @@ERROR <> 0
-        BEGIN
-            SELECT @Message = 3
-            PRINT ERROR_MESSAGE()  
-        END
-END CATCH
+-- CREATE PROCEDURE Sp_SalaryTypesReadAll 
+-- @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
+-- AS
+-- BEGIN TRY
+--     SELECT * FROM TbSalaryTypes WHERE Flag NOT LIKE 'D'
+--     SELECT @Message = 1 
+-- END TRY 
+-- BEGIN CATCH
+--     IF @@ERROR <> 0
+--         BEGIN
+--             SELECT @Message = 3
+--             PRINT ERROR_MESSAGE()  
+--         END
+-- END CATCH
 
-GO
+-- GO
 
--------------Read By Id Store Procedure-----------------------
-CREATE PROCEDURE Sp_SalaryTypesReadByID 
-@Id INT,
-@Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
-AS
-BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id)
-        BEGIN
-            SELECT * FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D'
-            SELECT @Message = 1 
-        END
-    ELSE
-        BEGIN
-            SELECT @Message = 0
-        END
-END TRY
-BEGIN CATCH
-	IF @@ERROR <> 0
-		BEGIN
-			SELECT @Message = 3
-			PRINT ERROR_MESSAGE()
-		END
-END CATCH
+-- -------------Read By Id Store Procedure-----------------------
+-- CREATE PROCEDURE Sp_SalaryTypesReadByID 
+-- @Id INT,
+-- @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
+-- AS
+-- BEGIN TRY
+--     IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id)
+--         BEGIN
+--             SELECT * FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D'
+--             SELECT @Message = 1 
+--         END
+--     ELSE
+--         BEGIN
+--             SELECT @Message = 0
+--         END
+-- END TRY
+-- BEGIN CATCH
+-- 	IF @@ERROR <> 0
+-- 		BEGIN
+-- 			SELECT @Message = 3
+-- 			PRINT ERROR_MESSAGE()
+-- 		END
+-- END CATCH
 
-GO
+-- GO
 
-----------------Insert Store Procedure------------------------
-CREATE PROCEDURE Sp_SalaryTypesInsert 
-@SalaryType NVARCHAR(150),
-@Flag CHAR(1) = 'A',
-@Message TINYINT OUT  --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
-AS
-BEGIN TRY
-	BEGIN TRANSACTION
-        --make sure the value not exist
-        IF NOT EXISTS(SELECT SalaryType FROM TbSalaryTypes WHERE SalaryType LIKE @SalaryType)
-            BEGIN
-                --Make sure the value not empty or null
-                IF @SalaryType NOT IN('', ' ', NULL)
-                    BEGIN
-                        INSERT INTO TbSalaryTypes (SalaryType, Flag) VALUES (@SalaryType, @Flag)
-                        SELECT @Message = 1
-                    END
-                ELSE
-                    BEGIN
-                        SElECT @Message = 0
-                    END
-            END
-        ELSE
-            BEGIN
-                SELECT @Message = 2
-            END
-END TRY
-BEGIN CATCH
-	IF @@ERROR <> 0
-		BEGIN
-			ROLLBACK TRANSACTION
-			SELECT @Message = 3
-			PRINT ERROR_MESSAGE()
-		END
-END CATCH
+-- ----------------Insert Store Procedure------------------------
+-- CREATE PROCEDURE Sp_SalaryTypesInsert 
+-- @SalaryType NVARCHAR(150),
+-- @Flag CHAR(1) = 'A',
+-- @Message TINYINT OUT  --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
+-- AS
+-- BEGIN TRY
+-- 	BEGIN TRANSACTION
+--         --make sure the value not exist
+--         IF NOT EXISTS(SELECT SalaryType FROM TbSalaryTypes WHERE SalaryType LIKE @SalaryType)
+--             BEGIN
+--                 --Make sure the value not empty or null
+--                 IF @SalaryType NOT IN('', ' ', NULL)
+--                     BEGIN
+--                         INSERT INTO TbSalaryTypes (SalaryType, Flag) VALUES (@SalaryType, @Flag)
+--                         SELECT @Message = 1
+--                     END
+--                 ELSE
+--                     BEGIN
+--                         SElECT @Message = 0
+--                     END
+--             END
+--         ELSE
+--             BEGIN
+--                 SELECT @Message = 2
+--             END
+-- END TRY
+-- BEGIN CATCH
+-- 	IF @@ERROR <> 0
+-- 		BEGIN
+-- 			ROLLBACK TRANSACTION
+-- 			SELECT @Message = 3
+-- 			PRINT ERROR_MESSAGE()
+-- 		END
+-- END CATCH
 
-GO
+-- GO
 
-----------------Update Store Procedure--------------------------
-CREATE PROCEDURE Sp_SalaryTypesUpdate 
-@Id INT, 
-@SalaryType NVARCHAR(150),
-@Flag CHAR(1) = 'A',
-@Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
-AS
-BEGIN TRY
-    BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
-            BEGIN
-                IF @SalaryType NOT IN('', ' ', NULL)
-                    BEGIN
-                        UPDATE TbSalaryTypes SET SalaryType = @SalaryType, Flag = @Flag WHERE ID = @Id
-                        SELECT @Message = 1
-                    END
-                ELSE
-                BEGIN
-                    SELECT @Message = 0
-                END
-            END
-        ELSE
-        BEGIN
-            SELECT @Message = 2
-        END
-    COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-	IF @@ERROR <> 0
-		BEGIN
-			ROLLBACK TRANSACTION
-			SELECT @Message = 3
-			PRINT ERROR_MESSAGE()
-		END
-END CATCH
+-- ----------------Update Store Procedure--------------------------
+-- CREATE PROCEDURE Sp_SalaryTypesUpdate 
+-- @Id INT, 
+-- @SalaryType NVARCHAR(150),
+-- @Flag CHAR(1) = 'A',
+-- @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
+-- AS
+-- BEGIN TRY
+--     BEGIN TRANSACTION
+--         IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
+--             BEGIN
+--                 IF @SalaryType NOT IN('', ' ', NULL)
+--                     BEGIN
+--                         UPDATE TbSalaryTypes SET SalaryType = @SalaryType, Flag = @Flag WHERE ID = @Id
+--                         SELECT @Message = 1
+--                     END
+--                 ELSE
+--                 BEGIN
+--                     SELECT @Message = 0
+--                 END
+--             END
+--         ELSE
+--         BEGIN
+--             SELECT @Message = 2
+--         END
+--     COMMIT TRANSACTION
+-- END TRY
+-- BEGIN CATCH
+-- 	IF @@ERROR <> 0
+-- 		BEGIN
+-- 			ROLLBACK TRANSACTION
+-- 			SELECT @Message = 3
+-- 			PRINT ERROR_MESSAGE()
+-- 		END
+-- END CATCH
 
-GO
+-- GO
 
-----------------DELETE Store Procedure---------------------
-CREATE PROCEDURE Sp_SalaryTpyesDelete 
-@Id INT, 
-@Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
-AS
-BEGIN TRY
-    BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D') 
-                BEGIN
-                    UPDATE TbSalaryTypes SET Flag = 'D' WHERE ID = @Id   
-                    SELECT @Message = 1
-                END
-            ELSE
-                BEGIN
-                    SELECT @Message = 2
-                END
-    COMMIT TRANSACTION
-END TRY
-BEGIN CATCH
-	IF @@ERROR <> 0
-		BEGIN
-			ROLLBACK TRANSACTION
-			SELECT @Message = 3
-			PRINT ERROR_MESSAGE()
-		END
-END CATCH
+-- ----------------DELETE Store Procedure---------------------
+-- CREATE PROCEDURE Sp_SalaryTpyesDelete 
+-- @Id INT, 
+-- @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
+-- AS
+-- BEGIN TRY
+--     BEGIN TRANSACTION
+--             IF EXISTS (SELECT ID FROM TbSalaryTypes WHERE ID = @Id AND Flag NOT LIKE 'D') 
+--                 BEGIN
+--                     UPDATE TbSalaryTypes SET Flag = 'D' WHERE ID = @Id   
+--                     SELECT @Message = 1
+--                 END
+--             ELSE
+--                 BEGIN
+--                     SELECT @Message = 2
+--                 END
+--     COMMIT TRANSACTION
+-- END TRY
+-- BEGIN CATCH
+-- 	IF @@ERROR <> 0
+-- 		BEGIN
+-- 			ROLLBACK TRANSACTION
+-- 			SELECT @Message = 3
+-- 			PRINT ERROR_MESSAGE()
+-- 		END
+-- END CATCH
 
-GO
+-- GO
 
 /*=================================================================================
 								TbSalaries proc
@@ -1051,6 +1056,7 @@ GO
 ----------------Insert Store Procedure------------------------
 CREATE PROCEDURE Sp_RewardTypesInsert 
 @RewardType NVARCHAR(200),
+@DefualtQuantity DECIMAL(9,2),
 @Flag CHAR(1) = 'A',
 @Message TINYINT OUT  --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
@@ -1062,7 +1068,7 @@ BEGIN TRY
                 --Make sure the value not empty or null
                 IF @RewardType NOT IN('', ' ', NULL)
                     BEGIN
-                        INSERT INTO TbRewardTypes (RewardType, Flag) VALUES (@RewardType, @Flag)
+                        INSERT INTO TbRewardTypes (RewardType, DefualtQuantity,Flag) VALUES (@RewardType, @DefualtQuantity,@Flag)
                         SELECT @Message = 1
                     END
                 ELSE
@@ -1090,6 +1096,7 @@ GO
 CREATE PROCEDURE Sp_RewardTypesUpdate 
 @Id INT, 
 @RewardType NVARCHAR(200),
+@DefualtQuantity DECIMAL(9,2),
 @Flag CHAR(1) = 'A',
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
@@ -1099,7 +1106,7 @@ BEGIN TRY
             BEGIN
                 IF (@RewardType NOT IN('', ' ', NULL))
                     BEGIN
-                        UPDATE TbRewardTypes SET RewardType = @RewardType, Flag = @Flag WHERE ID = @Id
+                        UPDATE TbRewardTypes SET RewardType = @RewardType, DefualtQuantity = @DefualtQuantity, Flag = @Flag WHERE ID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
