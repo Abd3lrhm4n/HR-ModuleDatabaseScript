@@ -1429,15 +1429,16 @@ END CATCH
 
 GO
 ---------Detele Store Procedure------------
-CREATE PROCEDURE TbDepartmentsDelete 
+CREATE PROCEDURE Sp_DepartmentsDelete 
 @Id INT,
+@Flag char(1),
 @Message TINYINT OUT
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbDepartments WHERE ID = @Id)
+            IF EXISTS (SELECT DepartmentName FROM TbDepartments WHERE DepartmentID = @Id)
                 BEGIN
-                    UPDATE TbDepartments SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbDepartments SET Flag = @Flag WHERE DepartmentID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
