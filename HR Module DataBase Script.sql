@@ -494,7 +494,7 @@ END CATCH
 
 GO
 
----------Detele Store Procedure------------
+---------Detele Store Procedure----------
 CREATE PROCEDURE Sp_ContactTypesDelete 
 @Id INT,
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
