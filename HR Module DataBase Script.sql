@@ -84,7 +84,7 @@ CREATE TABLE TbContactTypes(
     ContactConstraint NVARCHAR(500) NOT NULL,
     Flag CHAR(1) NOT NULL
     -----------------------------------------
-    CONSTRAINT PK_TbContactTypes PRIMARY KEY (ID)
+    CONSTRAINT PK_TbContactTypes PRIMARY KEY (ContactTypeID)
 )
 GO
 
@@ -101,8 +101,8 @@ CREATE TABLE TbContacts (
     ContactTypeID INT NOT NULL,
     Flag CHAR(1) NOT NULL
     -------------------------------------------
-    CONSTRAINT PK_TbContacts PRIMARY KEY (ID),
-    CONSTRAINT FK_TbContacts_TbContactType FOREIGN KEY (ContactTypeID) REFERENCES TbContactTypes(ID)
+    CONSTRAINT PK_TbContacts PRIMARY KEY (ContactID),
+    CONSTRAINT FK_TbContacts_TbContactType FOREIGN KEY (ContactTypeID) REFERENCES TbContactTypes(ContactTypeID)
 )
 GO
 
@@ -139,9 +139,9 @@ CREATE TABLE TbSalaries (
     EmployeeID INT NOT NULL,
     SalaryTypeID INT NOT NULL
     ------------------------------------
-    CONSTRAINT PK_TbSalary PRIMARY KEY(ID),
+    CONSTRAINT PK_TbSalary PRIMARY KEY(SalaryID),
     -- CONSTRAINT FK_TbSalary_TbSalaryTypes FOREIGN KEY(SalaryTypeID) REFERENCES TbSalaryTypes(ID),
-    CONSTRAINT FK_TbSalary_TbEmployees FOREIGN KEY(EmployeeID) REFERENCES TbEmployees(ID) 
+    CONSTRAINT FK_TbSalary_TbEmployees FOREIGN KEY(EmployeeID) REFERENCES TbEmployees(EmployeeID) 
 )
 GO
 
@@ -156,7 +156,7 @@ CREATE TABLE TbRewardTypes(
     DefualtQuantity DECIMAL(9,2),
     Flag CHAR(1) NOT NULL
     -----------------------------------
-    CONSTRAINT PK_TbRewardTypes PRIMARY KEY(ID)
+    CONSTRAINT PK_TbRewardTypes PRIMARY KEY(RewardTypeID)
 )
 
 --====================================
@@ -172,9 +172,9 @@ CREATE TABLE TbRewards (
     SalaryID INT NOT NULL,
     RewardTypeID INT NOT NULL
     -----------------------------------
-    CONSTRAINT PK_TbRewards PRIMARY KEY(ID),
-    CONSTRAINT FK_TbRewards_TbSalaries FOREIGN KEY(SalaryID) REFERENCES TbSalaries(ID),
-    CONSTRAINT FK_TbRewards_TbRewardTypes FOREIGN KEY(RewardTypeID) REFERENCES TbRewardTypes(ID) 
+    CONSTRAINT PK_TbRewards PRIMARY KEY(RewardID),
+    CONSTRAINT FK_TbRewards_TbSalaries FOREIGN KEY(SalaryID) REFERENCES TbSalaries(SalaryID),
+    CONSTRAINT FK_TbRewards_TbRewardTypes FOREIGN KEY(RewardTypeID) REFERENCES TbRewardTypes(RewardTypeID) 
 )
 
 
