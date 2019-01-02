@@ -1335,7 +1335,7 @@ Create PROCEDURE Sp_DepartmentsReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbDepartments WHERE ID = @Id)
+    IF EXISTS (SELECT  DepartmentName FROM TbDepartments WHERE DepartmentID = @Id)
         BEGIN
             SELECT * FROM TbDepartments WHERE ID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
