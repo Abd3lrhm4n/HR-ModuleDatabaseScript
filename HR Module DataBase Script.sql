@@ -1400,7 +1400,7 @@ CREATE PROCEDURE Sp_DepartmentsUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbDepartments WHERE ID = @Id)
+        IF EXISTS (SELECT DepartmentName FROM TbDepartments WHERE ID = @Id)
             BEGIN
                 IF (@DepartmentName NOT IN('', ' ', NULL))
                     BEGIN
