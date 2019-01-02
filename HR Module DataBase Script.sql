@@ -1780,7 +1780,7 @@ AS
 BEGIN TRY
     IF EXISTS (SELECT StaffName FROM TbStaffs WHERE StaffID = @Id)
         BEGIN
-            SELECT * FROM TbStaffs WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbStaffs WHERE StaffID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
