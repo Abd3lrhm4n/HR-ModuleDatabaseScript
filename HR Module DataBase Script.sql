@@ -1528,7 +1528,7 @@ Create proc [dbo].[Sp_DoctorsEdit]
 as 
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbStaffs WHERE ID = @DoctorID)
+        IF EXISTS (SELECT StaffID FROM TbStaffs WHERE StaffID = @DoctorID)
             BEGIN
                 IF @DoctorName is not null and 
 				   @BankAccount  is not null and 
@@ -1574,7 +1574,7 @@ Create PROCEDURE dbo.Sp_DoctorReadAll
 AS
 BEGIN TRY
     SELECT * FROM TbDoctors as dc inner join TbEmployees emp
-	on dc.ID = emp.ID
+	on dc.DoctorID = emp.DoctorID
 	 WHERE dc.Flag NOT LIKE 'D'
 	
     SELECT @Message = 1
@@ -1594,7 +1594,7 @@ Create PROCEDURE Sp_DoctorssReadByID
 @Message TINYINT OUT
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbDoctors WHERE ID = @Id)
+    IF EXISTS (SELECT DoctorID FROM TbDoctors WHERE DoctorID = @Id)
         BEGIN
             SELECT * FROM TbDoctors WHERE ID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
@@ -1622,7 +1622,7 @@ Create PROCEDURE [dbo].[Sp_DoctorsDelete]
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbDoctors WHERE ID = @Id)
+            IF EXISTS (SELECT DoctorName FROM TbDoctors WHERE DoctorID = @Id)
                 BEGIN
                     UPDATE TbDoctors SET Flag = @Flag WHERE ID = @Id 
 					Update TbEmployees Set Flag = @Flag where DoctorID =@Id  
@@ -1712,7 +1712,7 @@ Create proc [dbo].[Sp_StaffEdit]
 as 
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbStaffs WHERE ID = @StaffID)
+        IF EXISTS (SELECT StaffID FROM TbStaffs WHERE ID = @StaffID)
             BEGIN
                 IF @StaffID is not null and 
 				   @BankAccount  is not null and 
@@ -1803,9 +1803,9 @@ Create PROCEDURE [dbo].[Sp_StaffsDelete]
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbStaffs WHERE ID = @Id)
+            IF EXISTS (SELECT StaffName FROM TbStaffs WHERE StaffID = @Id)
                 BEGIN
-                    UPDATE TbStaffs SET Flag = 'D' WHERE ID = @Id 
+                    UPDATE TbStaffs SET Flag = 'D' WHERE StaffID = @Id 
 					Update TbEmployees Set Flag = 'D' where StaffID =@Id  
                     SELECT @Message = 1
                 END
@@ -1848,9 +1848,9 @@ CREATE PROCEDURE JobTitleReadByID
 @Message TINYINT OUT
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbJobTitles WHERE ID = @Id)
+    IF EXISTS (SELECT Title FROM TbJobTitles WHERE JobTitleID = @Id)
         BEGIN
-            SELECT * FROM TbJobTitles WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbJobTitles WHERE JobTitleID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -1915,7 +1915,7 @@ CREATE PROCEDURE Sp_JobTitlesUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbJobTitles WHERE ID = @Id)
+        IF EXISTS (SELECT JobTitleID FROM TbJobTitles WHERE JobTitleID = @Id)
             BEGIN
                 IF (@Title NOT IN('', ' ', NULL))
                     BEGIN
@@ -1951,7 +1951,7 @@ CREATE PROCEDURE Sp_JobTitlesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbJobTitles WHERE ID = @Id)
+            IF EXISTS (SELECT JobTitleID FROM TbJobTitles WHERE JobTitleID = @Id)
                 BEGIN
                     UPDATE TbJobTitles SET Flag = 'D' WHERE ID = @Id   
                     SELECT @Message = 1
