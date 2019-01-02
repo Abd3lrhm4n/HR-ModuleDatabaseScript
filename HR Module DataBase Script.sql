@@ -79,7 +79,7 @@ add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references T
 --====================================
 
 CREATE TABLE TbContactTypes(
-    ID INT IDENTITY(1,1) NOT NULL,
+    ContactTypeID INT IDENTITY(1,1) NOT NULL,
     ContactType NVARCHAR(100) NOT NULL,
     ContactConstraint NVARCHAR(500) NOT NULL,
     Flag CHAR(1) NOT NULL
@@ -94,7 +94,7 @@ GO
 --====================================
 
 CREATE TABLE TbContacts (
-    ID INT IDENTITY(1,1) NOT NULL,
+    ContactID INT IDENTITY(1,1) NOT NULL,
     Contact NVARCHAR(150) NOT NULL,
     TypeOfEmployee NVARCHAR(100) NOT NULL,
     ForeignKey INT NOT NULL,
@@ -125,7 +125,7 @@ GO
 --====================================
 
 CREATE TABLE TbSalaries (
-    ID INT IDENTITY(1,1) NOT NULL, 
+    SalaryID INT IDENTITY(1,1) NOT NULL, 
     Tax DECIMAL(9,2) NOT NULL,
     Insurance DECIMAL(9,2) DEFAULT 0,
     ComeLate DECIMAL(9,2) DEFAULT 0,
@@ -150,7 +150,7 @@ GO
 --====================================
 
 CREATE TABLE TbRewardTypes(
-    ID INT IDENTITY(1,1) NOT NULL,
+    RewardTypeID INT IDENTITY(1,1) NOT NULL,
     RewardType NVARCHAR(200) NOT NULL,
     --Defualt quantity for type of reward
     DefualtQuantity DECIMAL(9,2),
@@ -164,7 +164,7 @@ CREATE TABLE TbRewardTypes(
 --====================================
 
 CREATE TABLE TbRewards (
-    ID INT IDENTITY(1,1) NOT NULL,
+    RewardID INT IDENTITY(1,1) NOT NULL,
     Quantity DECIMAL(9,2) NOT NULL,
     Description NVARCHAR(MAX),
     Flag CHAR(1) NOT NULL,
