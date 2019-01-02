@@ -10,7 +10,7 @@ go
 --=========================================================
 Create table TbEmployees
 (
-EmployeesID int primary key identity(1,1),
+EmployeeID int primary key identity(1,1),
 BirthDate date,
 Gender nvarchar(20),
 BaseSalary decimal(9,2),
