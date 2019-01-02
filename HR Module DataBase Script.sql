@@ -27,28 +27,28 @@ WorkTimeID int
 Go 
 Create table TbJobTitles
 (
-ID int primary key identity(1,1),
+JobTitleID int primary key identity(1,1),
 Title nvarchar(150),
 Flag char(1) default 'A'
 )
 go 
 Create table TbDepartments
 (
-ID int primary key identity(1,1),
+DepartmentID int primary key identity(1,1),
 DepartmentName nvarchar(150),
 Flag char(1) default 'A'
 )
 go
 Create table TbStaffs
 (
-ID int primary key identity(1,1),
+StaffID int primary key identity(1,1),
 StaffName nvarchar(50),
 Flag char(1) default 'A'
 )
 go
 Create table TbDoctors
 (
-ID int primary key identity(1,1),
+DoctorID int primary key identity(1,1),
 DoctorName nvarchar(50),
 Flag char(1) default 'A'
 )
@@ -57,16 +57,16 @@ go
 --------------Constraint Foreign Keys ---------------------
 --=========================================================
 Alter table TbEmployees
-add constraint fk_TbEmployees_TbJobtitle  foreign key (JobTitleID) references TbJobTitles(ID)
+add constraint fk_TbEmployees_TbJobtitle  foreign key (JobTitleID) references TbJobTitles(JobTitleID)
 go 
 Alter table TbEmployees
-add constraint fk_TbEmployees_TbDepartments foreign key (DepartmentID) references TbDepartments(ID)
+add constraint fk_TbEmployees_TbDepartments foreign key (DepartmentID) references TbDepartments(DepartmentID)
 go 
 Alter table TbEmployees
-add constraint fk_TbEmployees_TbStaffs foreign key (StaffID) references TbStaffs(ID)
+add constraint fk_TbEmployees_TbStaffs foreign key (StaffID) references TbStaffs(StaffID)
 go 
 Alter table TbEmployees 
-add constraint fk_TbEmployees_TbDoctors foreign key (DoctorID) references TbDoctors(ID)
+add constraint fk_TbEmployees_TbDoctors foreign key (DoctorID) references TbDoctors(DoctorID)
 go 
 
 --add foregin key for workTime
