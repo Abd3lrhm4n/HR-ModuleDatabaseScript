@@ -1758,7 +1758,7 @@ Create PROCEDURE [dbo].[Sp_StaffsReadAll]
 AS
 BEGIN TRY
     SELECT * FROM TbStaffs as st inner join TbEmployees emp
-	on st.ID = emp.ID
+	on st.StaffID = emp.StaffID
 	 WHERE st.Flag NOT LIKE 'D'
 	
     SELECT @Message = 1
