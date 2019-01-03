@@ -51,6 +51,22 @@ DoctorID int primary key identity(1,1),
 DoctorName nvarchar(50),
 )
 go 
+
+--====================================
+-------------TbWorkTimes-----------
+--====================================
+create table [dbo].[TbWorkTimes]
+(WorkTimeID int  identity(1,1) not null,
+StartTime time,
+LeaveTime time,
+StaffName nvarchar(50),
+Flag char(1) default 'A',
+ CONSTRAINT [PK_TbWorkTimes] PRIMARY KEY CLUSTERED 
+(
+	[WorkTimeID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
 --=========================================================
 --------------Constraint Foreign Keys ---------------------
 --=========================================================
@@ -69,7 +85,9 @@ go
 
 --add foregin key for workTime
 Alter table TbEmployees
-add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references TbWorkTimes(WorkTimeID)
+add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references TbWorkTimes (WorkTimeID)
+
+GO
 
 
 --====================================
@@ -187,18 +205,18 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [dbo].[TbAttendaceDays](
-	[AttendaceDayID] [int] IDENTITY(1,1) NOT NULL,
+CREATE TABLE [dbo].[TbAttendanceDays](
+	[AttendanceDayID] [int] IDENTITY(1,1) NOT NULL,
 	[Date] [date] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbAttendaceDay] PRIMARY KEY CLUSTERED 
 (
-	[AttendaceDayID] ASC
+	[AttendanceDayID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
-ALTER TABLE [dbo].[TbAttendaceDays] ADD  CONSTRAINT [DF_TbAttendaceDays_Flag]  DEFAULT ('A') FOR [Flag]
+ALTER TABLE [dbo].[TbAttendanceDays] ADD  CONSTRAINT [DF_TbAttendaceDays_Flag]  DEFAULT ('A') FOR [Flag]
 GO
 
 --====================================
@@ -236,7 +254,7 @@ GO
 
 CREATE TABLE [dbo].[TbAttendances](
 	[AttendanceID] [int] IDENTITY(1,1) NOT NULL,
-	[AttendDayID] [int] NULL,
+	[AttendanceDayID] [int] NULL,
 	[EmployeeID] [int] NULL,
 	[From] [datetime] NULL,
 	[TO] [datetime] NULL,
@@ -246,7 +264,7 @@ CREATE TABLE [dbo].[TbAttendances](
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbAttendance] PRIMARY KEY CLUSTERED 
 (
-	[AttendancesID] ASC
+	[AttendanceID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -254,8 +272,8 @@ GO
 ALTER TABLE [dbo].[TbAttendances] ADD  CONSTRAINT [DF_TbAttendances_Flag]  DEFAULT ('A') FOR [Flag]
 GO
 
-ALTER TABLE [dbo].[TbAttendances]  WITH CHECK ADD  CONSTRAINT [FK_TbAttendance_TbAttendaceDay] FOREIGN KEY([AttendDayID])
-REFERENCES [dbo].[TbAttendaceDays] ([AttendanceDayID])
+ALTER TABLE [dbo].[TbAttendances]  WITH CHECK ADD  CONSTRAINT [FK_TbAttendance_TbAttendaceDay] FOREIGN KEY([AttendanceDayID])
+REFERENCES [dbo].[TbAttendanceDays] ([AttendanceDayID])
 GO
 
 ALTER TABLE [dbo].[TbAttendances] CHECK CONSTRAINT [FK_TbAttendance_TbAttendaceDay]
@@ -336,20 +354,6 @@ REFERENCES [dbo].[TbEmployeeVacations] ([EmployeeVacationID])
 --ALTER TABLE [dbo].[TbTakeVacations] CHECK CONSTRAINT [FK_TbTakeVacation_TbVacationType]
 --GO
 --====================================
--------------TbWorkTimes-----------
---====================================
-create table [dbo].[TbWorkTimes]
-(WorkTimeID int  identity(1,1) not null,
-StartTime time,
-LeaveTime time,
-StaffName nvarchar(50),
-Flag char(1) default 'A',
- CONSTRAINT [PK_TbWorkTimes] PRIMARY KEY CLUSTERED 
-(
-	[WorkTimeID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
---====================================
 -------------TbFixedVacations-----------
 --====================================
 create table [dbo].[TbFixedVacations]
@@ -394,9 +398,9 @@ CREATE PROCEDURE Sp_ContactTypesReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbContactTypes WHERE ID = @Id)
+    IF EXISTS (SELECT ContactTypeID FROM TbContactTypes WHERE ContactTypeID = @Id)
         BEGIN
-            SELECT * FROM TbContactTypes WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbContactTypes WHERE ContactTypeID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -469,11 +473,11 @@ CREATE PROCEDURE Sp_ContactTypesUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbContactTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
+        IF EXISTS (SELECT ContactTypeID FROM TbContactTypes WHERE ContactTypeID = @Id AND Flag NOT LIKE 'D')
             BEGIN
                 IF @ContactType NOT IN('', ' ', NULL)
                     BEGIN
-                        UPDATE TbContactTypes SET ContactType = @ContactType, ContactConstraint = @ContactConstraint,Flag = @Flag WHERE ID = @Id
+                        UPDATE TbContactTypes SET ContactType = @ContactType, ContactConstraint = @ContactConstraint,Flag = @Flag WHERE ContactTypeID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -508,9 +512,9 @@ CREATE PROCEDURE Sp_ContactTypesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbContactTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
+            IF EXISTS (SELECT ContactTypeID FROM TbContactTypes WHERE ContactTypeID = @Id AND Flag NOT LIKE 'D')
                 BEGIN
-                    UPDATE TbContactTypes SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbContactTypes SET Flag = 'D' WHERE ContactTypeID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -559,9 +563,9 @@ CREATE PROCEDURE Sp_ContactsReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbContacts WHERE ID = @Id)
+    IF EXISTS (SELECT ContactID FROM TbContacts WHERE ContactID = @Id)
         BEGIN
-            SELECT * FROM TbContacts WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbContacts WHERE ContactID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -639,11 +643,11 @@ CREATE PROCEDURE Sp_ContactsUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbContacts WHERE ID = @Id AND Flag NOT LIKE 'D')
+        IF EXISTS (SELECT ContactID FROM TbContacts WHERE ContactID = @Id AND Flag NOT LIKE 'D')
             BEGIN
                 IF @Contact NOT IN('', ' ', NULL) AND @TypeOfEmployee NOT IN('', ' ', NULL) AND @ForeignKey > 0 AND @ContactTypeID > 0
                     BEGIN
-                        UPDATE TbContacts SET Contact = @Contact, TypeOfEmployee = @TypeOfEmployee, ForeignKey = @ForeignKey, Flag = @Flag, ContactTypeID = @ContactTypeID WHERE ID = @Id
+                        UPDATE TbContacts SET Contact = @Contact, TypeOfEmployee = @TypeOfEmployee, ForeignKey = @ForeignKey, Flag = @Flag, ContactTypeID = @ContactTypeID WHERE ContactID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -678,9 +682,9 @@ CREATE PROCEDURE Sp_ContactsDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbContacts WHERE ID = @Id AND Flag NOT LIKE 'D')
+            IF EXISTS (SELECT ContactID FROM TbContacts WHERE ContactID = @Id AND Flag NOT LIKE 'D')
                 BEGIN
-                    UPDATE TbContacts SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbContacts SET Flag = 'D' WHERE ContactID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -880,9 +884,9 @@ CREATE PROCEDURE Sp_SalariesReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbSalaries WHERE ID = @Id)
+    IF EXISTS (SELECT SalaryID FROM TbSalaries WHERE SalaryID = @Id)
         BEGIN
-            SELECT * FROM TbSalaries WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbSalaries WHERE SalaryID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -967,7 +971,7 @@ CREATE PROCEDURE Sp_SalariesUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbSalaries WHERE ID = @Id AND Flag NOT LIKE 'D')
+        IF EXISTS (SELECT SalaryID FROM TbSalaries WHERE SalaryID = @Id AND Flag NOT LIKE 'D')
             BEGIN
                 IF @Tax > 0 AND @Insurance > 0 AND @ComeLate > 0 AND @LeaveEarly > 0 AND @Absent > 0 AND @vacations > 0 AND @Overtime > 0 AND @Note NOT IN('', ' ', NULL) AND @EmployeeID > 0 AND @SalaryTypeID > 0
                     BEGIN
@@ -1007,9 +1011,9 @@ CREATE PROCEDURE Sp_SalariesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbSalaries WHERE ID = @Id AND Flag NOT LIKE 'D')
+            IF EXISTS (SELECT SalaryID FROM TbSalaries WHERE SalaryID = @Id AND Flag NOT LIKE 'D')
                 BEGIN
-                    UPDATE TbSalaries SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbSalaries SET Flag = 'D' WHERE SalaryID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -1058,9 +1062,9 @@ CREATE PROCEDURE Sp_RewardTypesReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbRewardTypes WHERE ID = @Id)
+    IF EXISTS (SELECT RewardTypeID FROM TbRewardTypes WHERE RewardTypeID = @Id)
         BEGIN
-            SELECT * FROM TbRewardTypes WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbRewardTypes WHERE RewardTypeID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -1133,11 +1137,11 @@ CREATE PROCEDURE Sp_RewardTypesUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbRewardTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
+        IF EXISTS (SELECT RewardTypeID FROM TbRewardTypes WHERE RewardTypeID = @Id AND Flag NOT LIKE 'D')
             BEGIN
                 IF (@RewardType NOT IN('', ' ', NULL))
                     BEGIN
-                        UPDATE TbRewardTypes SET RewardType = @RewardType, DefualtQuantity = @DefualtQuantity, Flag = @Flag WHERE ID = @Id
+                        UPDATE TbRewardTypes SET RewardType = @RewardType, DefualtQuantity = @DefualtQuantity, Flag = @Flag WHERE RewardTypeID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -1172,9 +1176,9 @@ CREATE PROCEDURE Sp_RewardTypesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbRewardTypes WHERE ID = @Id AND Flag NOT LIKE 'D')
+            IF EXISTS (SELECT RewardTypeID FROM TbRewardTypes WHERE RewardTypeID = @Id AND Flag NOT LIKE 'D')
                 BEGIN
-                    UPDATE TbRewardTypes SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbRewardTypes SET Flag = 'D' WHERE RewardTypeID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -1221,9 +1225,9 @@ CREATE PROCEDURE Sp_RewardsReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT ID FROM TbRewards WHERE ID = @Id)
+    IF EXISTS (SELECT RewardID FROM TbRewards WHERE RewardID = @Id)
         BEGIN
-            SELECT * FROM TbRewards WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbRewards WHERE RewardID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -1295,11 +1299,11 @@ CREATE PROCEDURE Sp_RewardsUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT ID FROM TbRewards WHERE ID = @Id AND Flag NOT LIKE 'D')
+        IF EXISTS (SELECT RewardID FROM TbRewards WHERE RewardID = @Id AND Flag NOT LIKE 'D')
             BEGIN
                 IF @Quantity > 0 AND @SalaryID > 0 AND @RewardTypeID > 0
                     BEGIN
-                        UPDATE TbRewards SET Quantity = @Quantity, [Description] = @Description, SalaryID = @SalaryID, RewardTypeID = @RewardTypeID, Flag = @Flag
+                        UPDATE TbRewards SET Quantity = @Quantity, [Description] = @Description, SalaryID = @SalaryID, RewardTypeID = @RewardTypeID, Flag = @Flag WHERE RewardID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -1334,9 +1338,9 @@ CREATE PROCEDURE Sp_RewardsDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT ID FROM TbRewards WHERE ID = @Id AND Flag NOT LIKE 'D')
+            IF EXISTS (SELECT RewardID FROM TbRewards WHERE RewardID = @Id AND Flag NOT LIKE 'D')
                 BEGIN
-                    UPDATE TbRewards SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbRewards SET Flag = 'D' WHERE RewardID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -1380,7 +1384,7 @@ AS
 BEGIN TRY
     IF EXISTS (SELECT  DepartmentName FROM TbDepartments WHERE DepartmentID = @Id)
         BEGIN
-            SELECT * FROM TbDepartments WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbDepartments WHERE DepartmentID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -1449,11 +1453,11 @@ CREATE PROCEDURE Sp_DepartmentsUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT DepartmentName FROM TbDepartments WHERE ID = @Id)
+        IF EXISTS (SELECT DepartmentName FROM TbDepartments WHERE DepartmentID = @Id)
             BEGIN
                 IF (@DepartmentName NOT IN('', ' ', NULL))
                     BEGIN
-                        UPDATE TbDepartments SET DepartmentName = @DepartmentName, Flag = @Flag WHERE ID = @Id
+                        UPDATE TbDepartments SET DepartmentName = @DepartmentName, Flag = @Flag WHERE DepartmentID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -1528,7 +1532,7 @@ Create proc [dbo].[sp_InsertDoctors]
 as 
 begin try
 begin transaction 
-if not exists(Select *  from TbDoctors as st inner join TbEmployees as tb on st.ID =tb.DoctorID where NationalID=@NationalID and st.DoctorName =@DoctorName )
+if not exists(Select *  from TbDoctors as st inner join TbEmployees as tb on st.DoctorID =tb.DoctorID where NationalID=@NationalID and st.DoctorName =@DoctorName )
 begin 
 			if @DoctorName  is not null and 
 			@NationalID is not null and 
@@ -1631,14 +1635,14 @@ END CATCH
 GO
 ----------------------------------------------------------------------------------------------------
 --Reall All
-Create PROCEDURE dbo.Sp_DoctorReadAll
+Create PROCEDURE dbo.Sp_DoctorsReadAll
 @Flag CHAR(1),
 @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
 AS
 BEGIN TRY
     SELECT * FROM TbDoctors as dc inner join TbEmployees emp
 	on dc.DoctorID = emp.DoctorID
-	 WHERE dc.Flag LIKE @Flag
+	 WHERE emp.Flag LIKE @Flag
 	
     SELECT @Message = 1
 END TRY 
@@ -1652,14 +1656,14 @@ end catch
 GO
 -------------------------------------------------------------------
 --read by ID
-Create PROCEDURE Sp_DoctorssReadByID 
+Create PROCEDURE Sp_DoctorsReadByID 
 @Id INT,
 @Message TINYINT OUT
 AS
 BEGIN TRY
     IF EXISTS (SELECT DoctorID FROM TbDoctors WHERE DoctorID = @Id)
         BEGIN
-            SELECT * FROM TbDoctors WHERE ID = @Id 
+            SELECT * FROM TbDoctors WHERE DoctorID = @Id 
             SELECT @Message = 1 
         END
     ELSE
@@ -1728,7 +1732,7 @@ Create proc [dbo].[Sp_StaffsInsert]
 as 
 begin try
 begin transaction 
-if not exists(Select *  from TbStaffs as st inner join TbEmployees as tb on st.ID =tb.StaffID where NationalID=@NationalID and st.StaffName =@StaffName )
+if not exists(Select *  from TbStaffs as st inner join TbEmployees as tb on st.StaffID =tb.StaffID where NationalID=@NationalID and st.StaffName =@StaffName )
 begin 
 			if @StaffName is not null and 
 			@NationalID is not null and 
@@ -1784,7 +1788,7 @@ Create proc [dbo].[Sp_StaffsUpdate]
 as 
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT StaffID FROM TbStaffs WHERE ID = @StaffID)
+        IF EXISTS (SELECT StaffID FROM TbStaffs WHERE StaffID = @StaffID)
             BEGIN
                 IF @StaffID is not null and 
 				   @BankAccount  is not null and 
@@ -1833,7 +1837,7 @@ AS
 BEGIN TRY
     SELECT * FROM TbStaffs as st inner join TbEmployees emp
 	on st.StaffID = emp.StaffID
-	 WHERE st.Flag LIKE @Flag
+	 WHERE emp.Flag LIKE @Flag
 	
     SELECT @Message = 1
 END TRY 
@@ -1883,7 +1887,6 @@ BEGIN TRY
     BEGIN TRANSACTION
             IF EXISTS (SELECT StaffName FROM TbStaffs WHERE StaffID = @Id)
                 BEGIN
-                    UPDATE TbStaffs SET Flag = 'D' WHERE StaffID = @Id 
 					Update TbEmployees Set Flag = 'D' where StaffID =@Id  
                     SELECT @Message = 1
                 END
@@ -2003,7 +2006,7 @@ BEGIN TRY
             BEGIN
                 IF (@Title NOT IN('', ' ', NULL))
                     BEGIN
-                        UPDATE TbJobTitles SET Title = @Title, Flag = @Flag WHERE ID = @Id
+                        UPDATE TbJobTitles SET Title = @Title, Flag = @Flag WHERE JobTitleID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -2040,7 +2043,7 @@ BEGIN TRY
     BEGIN TRANSACTION
             IF EXISTS (SELECT JobTitleID FROM TbJobTitles WHERE JobTitleID = @Id)
                 BEGIN
-                    UPDATE TbJobTitles SET Flag = 'D' WHERE ID = @Id   
+                    UPDATE TbJobTitles SET Flag = 'D' WHERE JobTitleID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -2085,9 +2088,9 @@ CREATE PROCEDURE Sp_AttendancesReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
+    IF EXISTS (SELECT AttendanceID FROM TbAttendances WHERE AttendanceID = @Id)
         BEGIN
-            SELECT * FROM TbAttendances WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbAttendances WHERE AttendanceID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -2122,7 +2125,7 @@ CREATE PROCEDURE Sp_AttendancesInsert
 AS
 BEGIN TRY
 	BEGIN TRANSACTION
-		IF NOT EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @AttendDayID)
+		IF NOT EXISTS (SELECT AttendanceID FROM TbAttendances WHERE AttendanceID = @AttendDayID)
 			BEGIN
 				IF @AttendDayID >= 0 AND @EmployeeID NOT IN('', ' ', NULL) AND @From NOT IN('', ' ', NULL)
 					 AND @To NOT IN('', ' ', NULL) AND @Latenees NOT IN('', ' ', NULL) AND @LeaveEarly NOT IN('', ' ', NULL) 
@@ -2130,7 +2133,7 @@ BEGIN TRY
 					  AND @Flag NOT IN('', ' ', NULL)
 					BEGIN
 						INSERT INTO TbAttendances
-								(AttendDayID,EmployeeID,[From],[TO],Lateness,LeaveEarly,OverTime,Flag)
+								(AttendanceID,EmployeeID,[From],[TO],Lateness,LeaveEarly,OverTime,Flag)
 						VALUES (@AttendDayID,@EmployeeID,@From,@To,@Latenees,@LeaveEarly,@OverTime,@Flag)
 						SELECT @Message = 1
 					END
@@ -2173,7 +2176,7 @@ CREATE PROCEDURE Sp_AttendancesUpdate
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-        IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
+        IF EXISTS (SELECT AttendanceID FROM TbAttendances WHERE AttendanceID = @Id)
             BEGIN
               IF @AttendDayID >= 0 AND @EmployeeID NOT IN('', ' ', NULL) AND @From NOT IN('', ' ', NULL)
 					 AND @To NOT IN('', ' ', NULL) AND @Latenees NOT IN('', ' ', NULL) AND @LeaveEarly NOT IN('', ' ', NULL) 
@@ -2181,7 +2184,7 @@ BEGIN TRY
 					  AND @Flag NOT IN('', ' ', NULL)
                     BEGIN
                         UPDATE TbAttendances SET
-					AttendDayID=@AttendDayID,
+					AttendanceID=@AttendDayID,
 					EmployeeID=@EmployeeID,
 					[From]=@From,
 					[TO]=@To,
@@ -2189,7 +2192,7 @@ BEGIN TRY
 					LeaveEarly=@LeaveEarly,
 					OverTime=@OverTime,
 					Flag=@Flag
-						  WHERE AttendDayID = @Id
+						  WHERE AttendanceID = @Id
                         SELECT @Message = 1
                     END
                 ELSE
@@ -2223,9 +2226,9 @@ create procedure Sp_AttendancesDelete
 AS
 BEGIN TRY
     BEGIN TRANSACTION
-            IF EXISTS (SELECT AttendDayID FROM TbAttendances WHERE AttendDayID = @Id)
+            IF EXISTS (SELECT AttendanceID FROM TbAttendances WHERE AttendanceID = @Id)
                 BEGIN
-                    UPDATE TbAttendances SET Flag = 'D' WHERE AttendDayID = @Id   
+                    UPDATE TbAttendances SET Flag = 'D' WHERE AttendanceID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -2253,7 +2256,7 @@ CREATE PROCEDURE Sp_AttendaceDaysReadAll
 @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
 AS
 BEGIN TRY
-    SELECT * FROM TbAttendaceDays WHERE Flag NOT LIKE 'D'
+    SELECT * FROM TbAttendanceDays WHERE Flag NOT LIKE 'D'
     SELECT @Message = 1
 END TRY 
 BEGIN CATCH
@@ -2270,9 +2273,9 @@ create procedure Sp_AttendaceDaysReadByID
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT AttendaceDaysID FROM TbAttendaceDays WHERE AttendaceDaysID = @Id)
+    IF EXISTS (SELECT AttendaceDayID FROM TbAttendaceDays WHERE AttendaceDayID = @Id)
         BEGIN
-            SELECT * FROM TbAttendaceDays WHERE AttendaceDaysID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbAttendaceDays WHERE AttendaceDayID = @Id AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -2340,11 +2343,11 @@ create procedure Sp_AttendaceDayUpdate
 as 
 Begin try 
 	begin transaction 
-		if exists (select  AttendaceDaysID from TbAttendaceDays where  [AttendaceDayID] = @ID )	
+		if exists (select  AttendaceDayID from TbAttendaceDays where  [AttendaceDayID] = @ID )	
 			begin 
 				if @ID <> 0 and @Date not in ('',' ',null)
 					begin
-						update TbAttendaceDays 	set	[Date]=@Date, Flag = @Flag	where AttendaceDaysID =@ID
+						update TbAttendaceDays 	set	[Date]=@Date, Flag = @Flag	where AttendaceDayID = @ID
 						select @Message =1
 					end
 				else
@@ -2379,9 +2382,9 @@ create procedure Sp_AttendaceDayDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select AttendaceDaysID from TbAttendaceDays where AttendaceDaysID =@ID)	
+		if  exists (select AttendaceDayID from TbAttendaceDays where AttendaceDayID =@ID)	
 			begin
-	 			update TbAttendaceDays set Flag = 'D' where AttendaceDaysID =@ID
+	 			update TbAttendaceDays set Flag = 'D' where AttendaceDayID =@ID
 	 			select @Message =1 
 	 		end 
 	 	else 
@@ -2575,9 +2578,9 @@ create procedure Sp_TakeVacationsReadByID
 @ID int 
 as
 begin try
-	if exists (select TakeVacationsID from TbTakeVacations where  TakeVacationsID =@ID)
+	if exists (select TakeVacationID from TbTakeVacations where  TakeVacationID =@ID)
 		begin
-			select * from TbTakeVacations where TakeVacationsID=@ID and Flag not like 'D'
+			select * from TbTakeVacations where TakeVacationID = @ID and Flag not like 'D'
 			select @Message =1 
 		end
 	Else
@@ -2612,7 +2615,7 @@ begin try
 				If @DataTacked not in ('',' ',null) and @VacationTypeID not in ('',' ',Null)and @EmployeeID not in('',' ',null)
 
 					begin 
-						insert into TbTakeVacations (DateTacked,VacationTypeID,EmployeeID, Flag) values (@DataTacked,@VacationTypeID,@EmployeeID, @Flag)
+						insert into TbTakeVacations (DateTacked,VacationTypeID,EmployeeVacationID, Flag) values (@DataTacked,@VacationTypeID,@EmployeeID, @Flag)
 						select @Message =1 
 					end
 	 			else
@@ -2651,11 +2654,11 @@ create procedure Sp_TakeVacationsUpdate
 as
 begin try
 	begin transaction
-		if exists (select  TakeVacationsID from TbTakeVacations  where TakeVacationsID =@ID )
+		if exists (select  TakeVacationID from TbTakeVacations  where TakeVacationID =@ID )
 			begin
 				if @ID <> 0 and @DataTacked not in ('',' ',null)and @Flag not in ('',' ',null ) and @VacationTypeID not in ('',' ',null)and @EmployeeID not in ('',' ',null)
 					begin
-						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where TakeVacationsID =@ID
+						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where TakeVacationID =@ID
 					end 
 				else
 					begin
@@ -2688,9 +2691,9 @@ create procedure Sp_TakeVacationsDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select TakeVacationsID from TbTakeVacations where TakeVacationsID =@ID)	
+		if  exists (select TakeVacationID from TbTakeVacations where TakeVacationID =@ID)	
 	 		begin
-				update TbTakeVacations set Flag = 'D' where TakeVacationsID =@ID
+				update TbTakeVacations set Flag = 'D' where TakeVacationID =@ID
 				select @Message =1 
 			 end
 	 	else 
@@ -2734,9 +2737,9 @@ create procedure Sp_VacationTypesReadByID
 @ID int 
 as
 begin try
-	if exists (select VacationTypesID from TbVacationTypes where  VacationTypesID =@ID)
+	if exists (select VacationTypeID from TbVacationTypes where  VacationTypeID = @ID)
 		begin
-			select * from TbVacationTypes where ID=@ID and Flag not like 'D'
+			select * from TbVacationTypes where VacationTypeID = @ID and Flag not like 'D'
 			select @Message =1 
 		end
 	Else
@@ -2765,11 +2768,11 @@ create procedure Sp_VacationTypesInsert
 as
 begin try
 	begin transaction
-		if not exists (select  Type from TbVacationTypes where Type =@Type )
+		if not exists (select  VacationType from TbVacationTypes where VacationType = @Type )
 			begin
 				If @Type not in ('',' ',null) 
 					begin 
-						insert into TbVacationTypes (Type, Flag) values (@Type, @Flag)
+						insert into TbVacationTypes (VacationType, Flag) values (@Type, @Flag)
 						select @Message =1 
 					end
 	  			else
@@ -2806,12 +2809,12 @@ create procedure Sp_VacationTypesUpdate
 as
 begin try
 	begin transaction
-		if exists (select  VacationTypesID from TbVacationTypes  where VacationTypesID =@ID )
+		if exists (select  VacationTypeID from TbVacationTypes  where VacationTypeID =@ID )
 			begin
 				if @ID <> 0 and @Type not in ('',' ',null)and @Flag not in ('',' ',null )	
 					begin
 						update TbVacationTypes set [VacationType] =@Type, Flag = @Flag
-						where  VacationTypesID =@ID
+						where  VacationTypeID =@ID
 					end 
 				else
 					begin
@@ -2845,9 +2848,9 @@ create procedure Sp_VacationTypesDelete
 as 
 Begin Try
 	begin transaction 
-		if  exists (select VacationTypesID from TbVacationTypes where VacationTypesID =@ID)	
+		if  exists (select VacationTypeID from TbVacationTypes where VacationTypeID = @ID)	
 	 		begin
-				update TbVacationTypes set Flag ='D' where VacationTypesID =@ID
+				update TbVacationTypes set Flag ='D' where VacationTypeID =@ID
 				select @Message =1 
 	 		end
 	 	else 
