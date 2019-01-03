@@ -415,6 +415,9 @@ END CATCH
 GO
 
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactTypesInsert 
 @ContactType NVARCHAR(100),
 @Flag CHAR(1) = 'A',
@@ -454,6 +457,9 @@ END CATCH
 GO
 
 -------Update Store Procedure---------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactTypesUpdate 
 @Id int, 
 @ContactType NVARCHAR(100),
@@ -493,6 +499,9 @@ END CATCH
 GO
 
 ---------Detele Store Procedure----------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactTypesDelete 
 @Id INT,
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -571,6 +580,9 @@ END CATCH
 GO
 
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactsInsert 
 @Contact NVARCHAR(150), 
 @TypeOfEmployee NVARCHAR(100), 
@@ -613,6 +625,9 @@ END CATCH
 GO
 
 -------Update Store Procedure----------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactsUpdate 
 @Id INT, 
 @Contact NVARCHAR(150), 
@@ -654,6 +669,9 @@ END CATCH
 GO
 
 -------Delete Store Procedure----------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_ContactsDelete 
 @Id INT, 
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -884,6 +902,9 @@ GO
 
 
 ----------------Insert Store Procedure------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_SalariesInsert 
 @Tax DECIMAL(9,2), 
 @Insurance DECIMAL(9,2), 
@@ -926,6 +947,9 @@ END CATCH
 GO
 
 ---------------Update Store Procedure---------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_SalariesUpdate 
 @Id INT, 
 @Tax DECIMAL(9,2), 
@@ -974,6 +998,9 @@ END CATCH
 GO
 
 -------------Delete Store Procedure----------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_SalariesDelete 
 @Id INT, 
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -1052,6 +1079,9 @@ END CATCH
 GO
 
 ----------------Insert Store Procedure------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardTypesInsert 
 @RewardType NVARCHAR(200),
 @DefualtQuantity DECIMAL(9,2),
@@ -1091,6 +1121,9 @@ END CATCH
 
 GO
 --------------Update Store Procedure-------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardTypesUpdate 
 @Id INT, 
 @RewardType NVARCHAR(200),
@@ -1130,6 +1163,9 @@ END CATCH
 GO
 
 -----------Delete Store Procedure-------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardTypesDelete 
 @Id INT,
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -1207,6 +1243,9 @@ END CATCH
 GO
 
 ----------------Insert Store Procedure------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardsInsert 
 @Quantity DECIMAL(9,2), 
 @Description NVARCHAR(MAX), 
@@ -1242,6 +1281,9 @@ END CATCH
 GO
 
 -------------Update Store Procedure-------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardsUpdate 
 @Id INT, 
 @Quantity DECIMAL(9,2), 
@@ -1283,6 +1325,9 @@ END CATCH
 GO
 
 ----------Delete Store Procedure------------------------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_RewardsDelete 
 @Id INT,
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -1353,6 +1398,9 @@ END CATCH
 
 GO
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE TbDepartmentsInsert 
 @DepartmentName NVARCHAR(100),
 @Flag CHAR(1) = 'A',
@@ -1390,6 +1438,9 @@ BEGIN CATCH
 END CATCH
 GO
 -------Update Store Procedure---------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_DepartmentsUpdate 
 @Id int, 
 @DepartmentName NVARCHAR(100),
@@ -1427,6 +1478,9 @@ END CATCH
 
 GO
 ---------Detele Store Procedure------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_DepartmentsDelete 
 @Id INT,
 @Message TINYINT OUT
@@ -1456,6 +1510,9 @@ END CATCH
 
 GO
 --Insert Doctors
+SET ANSI_NULLS OFF
+GO
+
 Create proc [dbo].[sp_InsertDoctors]
 @DoctorName nvarchar(150),
 @DateOfBirth date, 
@@ -1513,6 +1570,9 @@ GO
 
 ---------------------------------------------------------------------------------------
 --Edit or Update Doctor
+SET ANSI_NULLS OFF
+GO
+
 Create proc [dbo].[Sp_DoctorsUpdate] 
 @DoctorID int,
 @DoctorName nvarchar(150),
@@ -1617,6 +1677,8 @@ END  catch
 --------------------------------------------------------------
 --delete Doctor
 GO
+SET ANSI_NULLS OFF
+GO
 
 Create PROCEDURE [dbo].[Sp_DoctorsDelete] 
 @Id INT,
@@ -1648,6 +1710,9 @@ END CATCH
 GO
 
 --Insert
+SET ANSI_NULLS OFF
+GO
+
 Create proc [dbo].[Sp_StaffsInsert] 
 @StaffName nvarchar(150),
 @DateOfBirth date, 
@@ -1700,6 +1765,9 @@ end catch
 GO  
 -----------------------------------------------------------------------
 --Edit Update
+SET ANSI_NULLS OFF
+GO
+
 Create proc [dbo].[Sp_StaffsUpdate] 
 @StaffID int,
 @StaffName nvarchar(150),
@@ -1801,7 +1869,11 @@ BEGIN CATCH
             PRINT ERROR_MESSAGE()
         END
 END CATCH
------------------------------------------------------------------------------
+
+--------------------------------Delete---------------------------------------------
+SET ANSI_NULLS OFF
+GO
+
 GO
 Create PROCEDURE [dbo].[Sp_StaffsDelete] 
 @Id INT,
@@ -1874,6 +1946,9 @@ END CATCH
 GO
 ------------------------------------------------------------------------------------
 --Insert JobTitle (there is an issue and you will know it because you used   something like this IF @Title NOT IN('', ' ', NULL))
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_JobTitlesInsert 
 @Title NVARCHAR(100),
 @Flag CHAR(1) = 'A',
@@ -1913,6 +1988,9 @@ END CATCH
 GO
 -----------------------------------------------------------------------------
 --Update Stored Procedure
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_JobTitlesUpdate 
 @Id int, 
 @Title NVARCHAR(100),
@@ -1950,6 +2028,9 @@ END CATCH
 GO
 --------------------------------------------------------------------------------------
 --Delete 
+SET ANSI_NULLS OFF
+GO
+
 
 CREATE PROCEDURE Sp_JobTitlesDelete 
 @Id INT,
@@ -2025,6 +2106,9 @@ END CATCH
 GO
 
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_AttendancesInsert
 @Message TINYINT OUT,--> 0 ==> NULL VALUE, 1 ==> ADDED, 2 ==> EXISTS, 3 ==> ERROR
 @AttendDayID INT,
@@ -2072,6 +2156,9 @@ END CATCH
 go
 
 ---------Update Store Procedure------------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE Sp_AttendancesUpdate 
 @Id INT,
 @Message TINYINT OUT,--> 0 ==> NULL VALUE, 1 ==> ADDED, 2 ==> EXISTS, 3 ==> ERROR
@@ -2127,6 +2214,9 @@ END CATCH
 
 GO
 ---------Delete Store Procedure------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_AttendancesDelete
 @Id INT,
 @Message TINYINT OUT -- 2 -> Existing ERROR, 1 -> DONE, 3 -> ERROR
@@ -2200,6 +2290,9 @@ END CATCH
 
 GO
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_AttendaceDaysInsert
 @message tinyint out,
 @Date date ,
@@ -2236,6 +2329,9 @@ begin catch
 end catch
 go
 -------Update Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_AttendaceDayUpdate
 @Message tinyint out ,
 @ID int ,
@@ -2274,6 +2370,9 @@ end catch
 go
 
 -------Delete Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_AttendaceDayDelete 
 @Message tinyint out,
 @ID int
@@ -2381,6 +2480,9 @@ begin catch
 end catch
 go
 -------Update Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_EmployeeVacationsUpdate
 @ID int ,
 @Message tinyint out,
@@ -2419,6 +2521,9 @@ end catch
 go
 
 -------Delete Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_EmployeeVacationsDelete 
 @Message tinyint out,
 @ID int
@@ -2488,7 +2593,11 @@ begin catch
 	end
 end catch
 go
+
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_TakeVacationsInsert
 @Message tinyint out,
 @DataTacked date,
@@ -2527,7 +2636,11 @@ begin catch
 		end
 end catch
 go
+
 -------Update Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_TakeVacationsUpdate
 @ID int ,
 @Message tinyint out,
@@ -2566,6 +2679,9 @@ end catch
 go
 
 -------Delete Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_TakeVacationsDelete 
 @Message tinyint out,
 @ID int
@@ -2637,7 +2753,11 @@ begin catch
 		end  
 end catch
 go
+
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_VacationTypesInsert
 @Message tinyint out,
 @Type nvarchar(50),
@@ -2673,7 +2793,11 @@ begin catch
 		end
 end catch
 go
+
 -------Update Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_VacationTypesUpdate
 @ID int ,
 @Message tinyint out,
@@ -2712,6 +2836,9 @@ end catch
 go
 
 -------Delete Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_VacationTypesDelete 
 @Message tinyint out,
 @ID int
@@ -2783,7 +2910,11 @@ begin catch
 		end  
 end catch
 go
+
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_WorkTimesInsert
 @Message tinyint out,
 @StartTime time,
@@ -2822,7 +2953,11 @@ begin catch
 		end
 end catch
 go
--------Update Store procedure-------------- 
+
+-------Update Store procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_WorkTimesUpdate
 @ID int ,
 @Message tinyint out,
@@ -2866,6 +3001,9 @@ end catch
 go
 
 -------Delete Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_WorkTimesDelete 
 @Message tinyint out,
 @StartTime time,
@@ -2897,6 +3035,7 @@ begin catch
 		end
 end catch
 go
+
 /*=================================================================================
 								TbFixedVacations proc
 ===================================================================================*/
@@ -2942,7 +3081,11 @@ begin catch
 		end  
 end catch
 go
+
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_FixedVacationsInsert
 @Message tinyint out,
 @FixedVacationName nvarchar(50),
@@ -2981,7 +3124,11 @@ begin catch
 		end
 end catch
 go
+
 -------Update Store procedure-------------- 
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_FixedVacationsUpdate
 @ID int ,
 @Message tinyint out,
@@ -3024,13 +3171,16 @@ begin catch
 end catch
 go
 
--------Delete Store procedure-------------- 
+-------Delete Store procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_FixedVacationsDelete 
 @ID int ,
 @Message tinyint out,
 @FixedVacationName nvarchar(50),
 @From datetime,
-@To datetime,
+@To datetime
 as 
 Begin Try
 	begin transaction 
