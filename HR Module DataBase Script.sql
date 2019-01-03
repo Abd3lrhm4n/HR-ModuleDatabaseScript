@@ -43,14 +43,12 @@ Create table TbStaffs
 (
 StaffID int primary key identity(1,1),
 StaffName nvarchar(50),
-Flag char(1) default 'A'
 )
 go
 Create table TbDoctors
 (
 DoctorID int primary key identity(1,1),
 DoctorName nvarchar(50),
-Flag char(1) default 'A'
 )
 go 
 --=========================================================
@@ -257,7 +255,7 @@ ALTER TABLE [dbo].[TbAttendances] ADD  CONSTRAINT [DF_TbAttendances_Flag]  DEFAU
 GO
 
 ALTER TABLE [dbo].[TbAttendances]  WITH CHECK ADD  CONSTRAINT [FK_TbAttendance_TbAttendaceDay] FOREIGN KEY([AttendDayID])
-REFERENCES [dbo].[TbAttendaceDays] ([ID])
+REFERENCES [dbo].[TbAttendaceDays] ([AttendanceDayID])
 GO
 
 ALTER TABLE [dbo].[TbAttendances] CHECK CONSTRAINT [FK_TbAttendance_TbAttendaceDay]
@@ -289,7 +287,7 @@ ALTER TABLE [dbo].[TbEmployeeVacations] ADD  CONSTRAINT [DF_TbEmployeeVacations_
 GO
 
 ALTER TABLE [dbo].[TbEmployeeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbEmployeeVacation_TbVacationType] FOREIGN KEY([VacationTypeID])
-REFERENCES [dbo].[TbVacationTypes] ([ID])
+REFERENCES [dbo].[TbVacationTypes] ([VacationTypeID])
 GO
 
 ALTER TABLE [dbo].[TbEmployeeVacations] CHECK CONSTRAINT [FK_TbEmployeeVacation_TbVacationType]
@@ -331,7 +329,7 @@ and I Add Fk for EmployeeTable
 --GO
 
 ALTER TABLE [dbo].[TbTakeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbEmployeeVacation_Tb] FOREIGN KEY([EmployeeVacationID])
-REFERENCES [dbo].[TbEmployeeVacations] ([ID])
+REFERENCES [dbo].[TbEmployeeVacations] ([EmployeeVacationID])
 
 
 
@@ -460,7 +458,7 @@ CREATE PROCEDURE Sp_ContactTypesUpdate
 @Id int, 
 @ContactType NVARCHAR(100),
 @ContactConstraint NVARCHAR(500),
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -621,7 +619,7 @@ CREATE PROCEDURE Sp_ContactsUpdate
 @TypeOfEmployee NVARCHAR(100), 
 @ForeignKey INT, 
 @ContactTypeID INT,
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -940,7 +938,7 @@ CREATE PROCEDURE Sp_SalariesUpdate
 @Note NVARCHAR(MAX), 
 @EmployeeID INT, 
 @SalaryTypeID INT,
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -1097,7 +1095,7 @@ CREATE PROCEDURE Sp_RewardTypesUpdate
 @Id INT, 
 @RewardType NVARCHAR(200),
 @DefualtQuantity DECIMAL(9,2),
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -1250,7 +1248,7 @@ CREATE PROCEDURE Sp_RewardsUpdate
 @Description NVARCHAR(MAX), 
 @SalaryID INT, 
 @RewardTypeID INT,
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT --0 -> NULL VALUE, 1 -> ADDED, 2 -> EXISTS, 3 -> ERROR
 AS
 BEGIN TRY
@@ -1357,7 +1355,7 @@ GO
 -------Insert Store Procedure--------------
 CREATE PROCEDURE TbDepartmentsInsert 
 @DepartmentName NVARCHAR(100),
-@Flag CHAR(1),
+@Flag CHAR(1) = 'A',
 @Message TINYINT OUT 
 AS
 BEGIN TRY
@@ -1431,14 +1429,13 @@ GO
 ---------Detele Store Procedure------------
 CREATE PROCEDURE Sp_DepartmentsDelete 
 @Id INT,
-@Flag char(1),
 @Message TINYINT OUT
 AS
 BEGIN TRY
     BEGIN TRANSACTION
             IF EXISTS (SELECT DepartmentName FROM TbDepartments WHERE DepartmentID = @Id)
                 BEGIN
-                    UPDATE TbDepartments SET Flag = @Flag WHERE DepartmentID = @Id   
+                    UPDATE TbDepartments SET Flag = 'D' WHERE DepartmentID = @Id   
                     SELECT @Message = 1
                 END
             ELSE
@@ -1503,16 +1500,20 @@ begin
     SElECT @Message = 0
 end 
 commit transaction
-end try
-
-begin catch 
-rollback transaction
-end catch
+end TRY
+BEGIN CATCH
+    IF @@ERROR <> 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            SELECT @Message = 3
+            PRINT ERROR_MESSAGE()
+        END
+END CATCH
 GO
 
 ---------------------------------------------------------------------------------------
 --Edit or Update Doctor
-Create proc [dbo].[Sp_DoctorsEdit] 
+Create proc [dbo].[Sp_DoctorsUpdate] 
 @DoctorID int,
 @DoctorName nvarchar(150),
 @DateOfBirth date, 
@@ -1540,7 +1541,8 @@ BEGIN TRY
 				   @DateOfBirth is not null 
 				   
                     BEGIN
-                        UPDATE TbDoctors SET DoctorName =@DoctorName  where ID =@DoctorID
+					--Alot of shit here
+                        --UPDATE TbDoctors SET DoctorName =@DoctorName  where ID =@DoctorID
 						Update TbEmployees set BankAccount =@BankAccount , BankName =@BankName,
 						BaseSalary =@BaseSalary , BirthDate=@DateOfBirth, DepartmentID =@DepartmentID,
 						Gender = @Gender ,NationalID =@NationalID, Flag = @Flag where DoctorID =@DoctorID
@@ -1570,12 +1572,13 @@ GO
 ----------------------------------------------------------------------------------------------------
 --Reall All
 Create PROCEDURE dbo.Sp_DoctorReadAll
+@Flag CHAR(1),
 @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
 AS
 BEGIN TRY
     SELECT * FROM TbDoctors as dc inner join TbEmployees emp
 	on dc.DoctorID = emp.DoctorID
-	 WHERE dc.Flag NOT LIKE 'D'
+	 WHERE dc.Flag LIKE @Flag
 	
     SELECT @Message = 1
 END TRY 
@@ -1596,7 +1599,7 @@ AS
 BEGIN TRY
     IF EXISTS (SELECT DoctorID FROM TbDoctors WHERE DoctorID = @Id)
         BEGIN
-            SELECT * FROM TbDoctors WHERE ID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbDoctors WHERE ID = @Id 
             SELECT @Message = 1 
         END
     ELSE
@@ -1617,15 +1620,15 @@ GO
 
 Create PROCEDURE [dbo].[Sp_DoctorsDelete] 
 @Id INT,
-@Flag CHAR(1),
 @Message TINYINT OUT 
 AS
 BEGIN TRY
     BEGIN TRANSACTION
             IF EXISTS (SELECT DoctorName FROM TbDoctors WHERE DoctorID = @Id)
                 BEGIN
-                    UPDATE TbDoctors SET Flag = @Flag WHERE ID = @Id 
-					Update TbEmployees Set Flag = @Flag where DoctorID =@Id  
+				--What That shit doing here
+                    --UPDATE TbDoctors SET Flag = @Flag WHERE ID = @Id 
+					Update TbEmployees Set Flag = 'D' where DoctorID =@Id  
                     SELECT @Message = 1
                 END
             ELSE
@@ -1643,6 +1646,7 @@ BEGIN CATCH
         END
 END CATCH
 GO
+
 --Insert
 Create proc [dbo].[Sp_StaffsInsert] 
 @StaffName nvarchar(150),
@@ -1696,7 +1700,7 @@ end catch
 GO  
 -----------------------------------------------------------------------
 --Edit Update
-Create proc [dbo].[Sp_StaffEdit] 
+Create proc [dbo].[Sp_StaffsUpdate] 
 @StaffID int,
 @StaffName nvarchar(150),
 @DateOfBirth date, 
@@ -1707,7 +1711,7 @@ Create proc [dbo].[Sp_StaffEdit]
 @NationalID varchar(15),
 @JobTitleID int , 
 @DepartmentID int,
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT
 as 
 BEGIN TRY
@@ -1724,7 +1728,8 @@ BEGIN TRY
 				   @DateOfBirth is not null 
 				   
                     BEGIN
-                        UPDATE TbStaffs SET StaffName =@StaffName  where ID =@StaffID
+					--another shit here
+                        --UPDATE TbStaffs SET StaffName =@StaffName  where ID =@StaffID
 						Update TbEmployees set BankAccount =@BankAccount , BankName =@BankName,
 						BaseSalary =@BaseSalary , BirthDate=@DateOfBirth, DepartmentID =@DepartmentID,
 						Gender = @Gender ,NationalID =@NationalID, Flag = @Flag where StaffID =@StaffID
@@ -1754,12 +1759,13 @@ GO
 -----------------------------------------------------------------------------------
 --read all
 Create PROCEDURE [dbo].[Sp_StaffsReadAll] 
+@Flag CHAR(1),
 @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
 AS
 BEGIN TRY
     SELECT * FROM TbStaffs as st inner join TbEmployees emp
 	on st.StaffID = emp.StaffID
-	 WHERE st.Flag NOT LIKE 'D'
+	 WHERE st.Flag LIKE @Flag
 	
     SELECT @Message = 1
 END TRY 
@@ -1780,7 +1786,7 @@ AS
 BEGIN TRY
     IF EXISTS (SELECT StaffName FROM TbStaffs WHERE StaffID = @Id)
         BEGIN
-            SELECT * FROM TbStaffs WHERE StaffID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbStaffs WHERE StaffID = @Id 
             SELECT @Message = 1 
         END
     ELSE
@@ -1910,7 +1916,7 @@ GO
 CREATE PROCEDURE Sp_JobTitlesUpdate 
 @Id int, 
 @Title NVARCHAR(100),
-@Flag CHAR(1) = 'A',
+@Flag CHAR(1),
 @Message TINYINT OUT 
 AS
 BEGIN TRY
@@ -2066,7 +2072,8 @@ END CATCH
 go
 
 ---------Update Store Procedure------------
-CREATE PROCEDURE Sp_AttendancesUpdate @Id INT,
+CREATE PROCEDURE Sp_AttendancesUpdate 
+@Id INT,
 @Message TINYINT OUT,--> 0 ==> NULL VALUE, 1 ==> ADDED, 2 ==> EXISTS, 3 ==> ERROR
 @AttendDayID INT,
 @EmployeeID INt,
@@ -2233,7 +2240,7 @@ create procedure Sp_AttendaceDayUpdate
 @Message tinyint out ,
 @ID int ,
 @Date Date ,
-@Flag Char(1) ='A'
+@Flag Char(1)
 as 
 Begin try 
 	begin transaction 
@@ -2320,7 +2327,7 @@ as
 begin try
 	if exists (select EmployeeVacationID from TbEmployeeVacations where  EmployeeVacationID =@ID)
 		begin
-			select * from TbEmployeeVacations where EmployeeVacationID=@ID and Flag not like 'D'
+			select * from TbEmployeeVacations where EmployeeVacationID = @ID and Flag not like 'D'
 			select @Message =1 
 		end
 	Else
@@ -2380,7 +2387,7 @@ create procedure Sp_EmployeeVacationsUpdate
 @VacationTypeID int,
 @Days int,
 @EmployeeID int,
-@Flag char(1) ='A'
+@Flag char(1)
 as
 begin try
 	begin transaction
@@ -2527,7 +2534,7 @@ create procedure Sp_TakeVacationsUpdate
 @DataTacked date,
 @VacationTypeID int,
 @EmployeeID int,
-@Flag char(1) ='A'
+@Flag char(1)
 as
 begin try
 	begin transaction
@@ -2671,7 +2678,7 @@ create procedure Sp_VacationTypesUpdate
 @ID int ,
 @Message tinyint out,
 @Type nvarchar(50) ,
-@Flag char(1) ='A'
+@Flag char(1)
 as
 begin try
 	begin transaction
@@ -2822,7 +2829,7 @@ create procedure Sp_WorkTimesUpdate
 @StartTime time,
 @LeaveTime time,
 @StaffName nvarchar(50),
-@Flag CHAR(1) = 'A'
+@Flag CHAR(1)
 as
 begin try
 	begin transaction
@@ -2981,7 +2988,7 @@ create procedure Sp_FixedVacationsUpdate
 @FixedVacationName nvarchar(50),
 @From datetime,
 @To datetime,
-@Flag CHAR(1) = 'A'
+@Flag CHAR(1)
 as
 begin try
 	begin transaction
@@ -3024,7 +3031,6 @@ create procedure Sp_FixedVacationsDelete
 @FixedVacationName nvarchar(50),
 @From datetime,
 @To datetime,
-@Flag CHAR(1) = 'A'
 as 
 Begin Try
 	begin transaction 
