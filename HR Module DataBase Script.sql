@@ -71,7 +71,7 @@ go
 
 --add foregin key for workTime
 Alter table TbEmployees
-add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references TbWorkTimes(ID)
+add constraint fk_TbEmployees_TbWorkTimes  foreign key (WorkTimeID) references TbWorkTimes(WorkTimeID)
 
 
 --====================================
@@ -82,7 +82,7 @@ CREATE TABLE TbContactTypes(
     ContactTypeID INT IDENTITY(1,1) NOT NULL,
     ContactType NVARCHAR(100) NOT NULL,
     ContactConstraint NVARCHAR(500) NOT NULL,
-    Flag CHAR(1) NOT NULL
+    Flag CHAR(1) default 'A'
     -----------------------------------------
     CONSTRAINT PK_TbContactTypes PRIMARY KEY (ContactTypeID)
 )
@@ -99,7 +99,7 @@ CREATE TABLE TbContacts (
     TypeOfEmployee NVARCHAR(100) NOT NULL,
     ForeignKey INT NOT NULL,
     ContactTypeID INT NOT NULL,
-    Flag CHAR(1) NOT NULL
+    Flag CHAR(1) default 'A'
     -------------------------------------------
     CONSTRAINT PK_TbContacts PRIMARY KEY (ContactID),
     CONSTRAINT FK_TbContacts_TbContactType FOREIGN KEY (ContactTypeID) REFERENCES TbContactTypes(ContactTypeID)
@@ -134,7 +134,7 @@ CREATE TABLE TbSalaries (
     Vacations DECIMAL(9,2) DEFAULT 0,
     Overtime DECIMAL(9,2) DEFAULT 0,
     Note NVARCHAR(MAX),
-    Flag CHAR(1) NOT NULL,
+    Flag CHAR(1) default 'A',
     -------------Foreign keys---------
     EmployeeID INT NOT NULL,
     SalaryTypeID INT NOT NULL
@@ -154,7 +154,7 @@ CREATE TABLE TbRewardTypes(
     RewardType NVARCHAR(200) NOT NULL,
     --Defualt quantity for type of reward
     DefualtQuantity DECIMAL(9,2),
-    Flag CHAR(1) NOT NULL
+    Flag CHAR(1) default 'A'
     -----------------------------------
     CONSTRAINT PK_TbRewardTypes PRIMARY KEY(RewardTypeID)
 )
@@ -167,7 +167,7 @@ CREATE TABLE TbRewards (
     RewardID INT IDENTITY(1,1) NOT NULL,
     Quantity DECIMAL(9,2) NOT NULL,
     Description NVARCHAR(MAX),
-    Flag CHAR(1) NOT NULL,
+    Flag CHAR(1) default 'A',
     ----------Foreign Keys----------
     SalaryID INT NOT NULL,
     RewardTypeID INT NOT NULL
@@ -190,12 +190,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbAttendaceDays](
-	[AttendaceDaysID] [int] IDENTITY(1,1) NOT NULL,
+	[AttendaceDayID] [int] IDENTITY(1,1) NOT NULL,
 	[Date] [date] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbAttendaceDay] PRIMARY KEY CLUSTERED 
 (
-	[AttendaceDaysID] ASC
+	[AttendaceDayID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -213,12 +213,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbVacationTypes](
-	[VacationTypesID] [int] IDENTITY(1,1) NOT NULL,
-	[Type] [nvarchar](50) NULL,
+	[VacationTypeID] [int] IDENTITY(1,1) NOT NULL,
+	[VacationType] [nvarchar](50) NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbVacationType] PRIMARY KEY CLUSTERED 
 (
-	[VacationTypesID] ASC
+	[VacationTypeID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -237,7 +237,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbAttendances](
-	[AttendancesID] [int] IDENTITY(1,1) NOT NULL,
+	[AttendanceID] [int] IDENTITY(1,1) NOT NULL,
 	[AttendDayID] [int] NULL,
 	[EmployeeID] [int] NULL,
 	[From] [datetime] NULL,
@@ -274,7 +274,7 @@ GO
 
 CREATE TABLE [dbo].[TbEmployeeVacations](
 	[EmployeeVacationID] [int] IDENTITY(1,1) NOT NULL,
-	[Vtype] [int] NULL,
+	[VacationTypeID] [int] NULL,
 	[Days] [int] NULL,
 	[EmployeeID] [int] NULL,
 	[Flag] [char](1) NULL,
@@ -288,7 +288,7 @@ GO
 ALTER TABLE [dbo].[TbEmployeeVacations] ADD  CONSTRAINT [DF_TbEmployeeVacations_Flag]  DEFAULT ('A') FOR [Flag]
 GO
 
-ALTER TABLE [dbo].[TbEmployeeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbEmployeeVacation_TbVacationType] FOREIGN KEY([Vtype])
+ALTER TABLE [dbo].[TbEmployeeVacations]  WITH CHECK ADD  CONSTRAINT [FK_TbEmployeeVacation_TbVacationType] FOREIGN KEY([VacationTypeID])
 REFERENCES [dbo].[TbVacationTypes] ([ID])
 GO
 
@@ -306,13 +306,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE TABLE [dbo].[TbTakeVacations](
-	[TakeVacationsID] [int] IDENTITY(1,1) NOT NULL,
+	[TakeVacationID] [int] IDENTITY(1,1) NOT NULL,
 	[DateTacked] [date] NULL,
 	[EmployeeVacationID] [int] NULL,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbTakeVacation] PRIMARY KEY CLUSTERED 
 (
-	[TakeVacationsID] ASC
+	[TakeVacationID] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
@@ -2237,7 +2237,7 @@ create procedure Sp_AttendaceDayUpdate
 as 
 Begin try 
 	begin transaction 
-		if exists (select  AttendaceDaysID from TbAttendaceDays where  [AttendaceDaysID] = @ID )	
+		if exists (select  AttendaceDaysID from TbAttendaceDays where  [AttendaceDayID] = @ID )	
 			begin 
 				if @ID <> 0 and @Date not in ('',' ',null)
 					begin
@@ -2339,18 +2339,18 @@ go
 -------Insert Store Procedure--------------
 create procedure Sp_EmployeeVacationsInsert
 @Message tinyint out,
-@VType int,
+@VacationTypeID int,
 @Days int,
 @Flag CHAR(1) = 'A',
 @EmployeeID int
 as
 begin try
 	begin transaction
-		if not exists (select  Vtype from TbEmployeeVacations where Vtype =@VType )
+		if not exists (select  VacationTypeID from TbEmployeeVacations where VacationTypeID =@VacationTypeID )
 			begin
-				If @VType not in ('',' ',null) and @Days not in ('',' ',Null)and @EmployeeID not in('',' ',null)
+				If @VacationTypeID not in ('',' ',null) and @Days not in ('',' ',Null)and @EmployeeID not in('',' ',null)
 					begin 
-						insert into TbEmployeeVacations (Vtype,Days,EmployeeID, Flag) values (@VType,@Days,@EmployeeID, @Flag)
+						insert into TbEmployeeVacations (VacationTypeID,Days,EmployeeID, Flag) values (@VacationTypeID,@Days,@EmployeeID, @Flag)
 						select @Message =1 
 					end
 				else
@@ -2377,7 +2377,7 @@ go
 create procedure Sp_EmployeeVacationsUpdate
 @ID int ,
 @Message tinyint out,
-@VType int,
+@VacationTypeID int,
 @Days int,
 @EmployeeID int,
 @Flag char(1) ='A'
@@ -2386,9 +2386,9 @@ begin try
 	begin transaction
 		if exists (select  EmployeeVacationID from TbEmployeeVacations  where EmployeeVacationID =@ID )
 			begin
-				if @ID <> 0 and @VType not in ('',' ',null)and @Flag not in ('',' ',null ) and @Days not in ('',' ',null)and @EmployeeID not in ('',' ',null)
+				if @ID <> 0 and @VacationTypeID not in ('',' ',null)and @Flag not in ('',' ',null ) and @Days not in ('',' ',null)and @EmployeeID not in ('',' ',null)
 					begin
-						update TbEmployeeVacations set [Vtype] =@VType,	[Days]=@Days, [EmployeeID]=@EmployeeID,	Flag = @Flag where EmployeeVacationID =@ID
+						update TbEmployeeVacations set [VacationTypeID] =@VacationTypeID,	[Days]=@Days, [EmployeeID]=@EmployeeID,	Flag = @Flag where EmployeeVacationID =@ID
 					end 
 				else
 					begin
@@ -2679,7 +2679,7 @@ begin try
 			begin
 				if @ID <> 0 and @Type not in ('',' ',null)and @Flag not in ('',' ',null )	
 					begin
-						update TbVacationTypes set [Type] =@Type, Flag = @Flag
+						update TbVacationTypes set [VacationType] =@Type, Flag = @Flag
 						where  VacationTypesID =@ID
 					end 
 				else
