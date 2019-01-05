@@ -1,5 +1,5 @@
 --=========================================================
---------------Create Database that commit for github ---------------------------
+--------------Create Database  ---------------------------
 --=========================================================
 Create Database SmartClinicTest
 go 
@@ -309,6 +309,8 @@ CREATE TABLE [dbo].[TbTakeVacations](
 	[TakeVacationsID] [int] IDENTITY(1,1) NOT NULL,
 	[DateTacked] [date] NULL,
 	[EmployeeVacationID] [int] NULL,
+	[From]datetime,
+	[To]datetime,
 	[Flag] [char](1) NULL,
  CONSTRAINT [PK_TbTakeVacation] PRIMARY KEY CLUSTERED 
 (
@@ -2484,18 +2486,19 @@ go
 create procedure Sp_TakeVacationsInsert
 @Message tinyint out,
 @DataTacked date,
-@VacationTypeID int,
-@EmployeeID int,
+@EmployeeVacationID int,
+@From datetime,
+@To datetime,
 @Flag CHAR(1) = 'A'
 as
 begin try
 	begin transaction
 		if not exists (select  DateTacked from TbTakeVacations where DateTacked =@DataTacked )
 			begin
-				If @DataTacked not in ('',' ',null) and @VacationTypeID not in ('',' ',Null)and @EmployeeID not in('',' ',null)
+				If @DataTacked not in ('',' ',null) and @EmployeeVacationID not in ('',' ',Null)and @From not in('',' ',null)
 
 					begin 
-						insert into TbTakeVacations (DateTacked,VacationTypeID,EmployeeID, Flag) values (@DataTacked,@VacationTypeID,@EmployeeID, @Flag)
+						insert into TbTakeVacations (DateTacked,EmployeeVacationID,[From],[To], Flag) values (@DataTacked,@EmployeeVacationID,@From,@To, @Flag)
 						select @Message =1 
 					end
 	 			else
@@ -2524,17 +2527,18 @@ create procedure Sp_TakeVacationsUpdate
 @ID int ,
 @Message tinyint out,
 @DataTacked date,
-@VacationTypeID int,
-@EmployeeID int,
+@EmployeeVacationID int,
+@From datetime,
+@To datetime,
 @Flag char(1) ='A'
 as
 begin try
 	begin transaction
 		if exists (select  TakeVacationsID from TbTakeVacations  where TakeVacationsID =@ID )
 			begin
-				if @ID <> 0 and @DataTacked not in ('',' ',null)and @Flag not in ('',' ',null ) and @VacationTypeID not in ('',' ',null)and @EmployeeID not in ('',' ',null)
+				if @ID <> 0 and @DataTacked not in ('',' ',null)and @Flag not in ('',' ',null ) and @EmployeeVacationID not in ('',' ',null)and @From not in ('',' ',null)
 					begin
-						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where TakeVacationsID =@ID
+						update TbTakeVacations set [DateTacked] =@DataTacked, EmployeeVacationID=@EmployeeVacationID,[From]=@From,[To]=@To, Flag = @Flag where TakeVacationsID =@ID
 					end 
 				else
 					begin
