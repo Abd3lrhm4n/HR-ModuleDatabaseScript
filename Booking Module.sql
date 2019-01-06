@@ -1,16 +1,58 @@
 use SmartClinicDB
 GO
+
+--==============================================
+---------------Reservation Types----------------
+--==============================================
+
+Create table TbReservationTypes
+(
+ReservationTypeID int primary key identity(1,1),
+ReservationTypeName nvarchar(50),
+Flag CHAR(1)
+)
+go 
+
+--==============================================
+---------------Reservation----------------------
+--==============================================
+
 Create table TbReservations
 (
-ReservationID int primary key identity(1,1),
-StaffID int , -- from table Staff
-PatientID int , -- from table Patient
-ReservationDate datetime ,
-ReservationCheck datetime ,
-Flag char(1),
-ReservationTypeID int 
+	ReservationID int primary key identity(1,1),
+	StaffID int , -- from table Staff
+	DoctorID int, --from table doctor
+	PatientID int , -- from table Patient
+	ReservationTypeID int,
+	ReservationDate datetime ,
+	ReservationCheck datetime ,
+	Flag char(1)
 )
 go
+
+--==============================================
+---------------Reservation Prices---------------
+--==============================================
+
+Create table TbReservationPrice
+(
+DoctorID int ,
+ReservationTypeID int,
+primary key(DoctorID,ReservationTypeID),
+Flag char(1)
+)
+go 
+
+
+----------------------------------------------
+----------------------------------------------
+--add constraint
+Alter table TbReservations
+add constraint fk_TbReservations_withhisType foreign key (ReservationTypeID) references 
+TbReservationTypes(ReservationTypeID)
+
+GO
+
 /*=============================================
 ---------------Reservation Proc--------------
 =============================================*/ 
@@ -187,15 +229,6 @@ go
 
 
 
-/*=============================================
-*/
-Create table TbReservationTypes
-(
-ReservationTypeID int primary key identity(1,1),
-ReservationTypeName nvarchar(50),
-Flag CHAR(1)
-)
-go 
 /*
 ======================================
         TbReservationTypes Proc
@@ -351,17 +384,6 @@ end catch
 go
 
 
-
---------------------------------------
-
-Create table TbReservationPrice
-(
-DoctorID int ,
-ReservationTypeID int,
-primary key(DoctorID,ReservationTypeID),
-Flag char(1)
-)
-go 
 /*
 ======================================
     TbReservationPrices Proc
@@ -522,16 +544,6 @@ end catch
 go
 
 
-
-
-
-
-----------------------------------------------
-----------------------------------------------
---add constraint
-Alter table TbReservations
-add constraint fk_TbReservations_withhisType foreign key (ReservationTypeID) references 
-TbReservationTypes(ReservationTypeID)
 ---------------------------------------------
 --message
 /*
