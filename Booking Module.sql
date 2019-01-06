@@ -7,9 +7,9 @@ GO
 
 Create table TbReservationTypes
 (
-ReservationTypeID int primary key identity(1,1),
-ReservationTypeName nvarchar(50),
-Flag CHAR(1)
+	ReservationTypeID int primary key identity(1,1),
+	ReservationTypeName nvarchar(50),
+	Flag CHAR(1)
 )
 go 
 
@@ -36,11 +36,11 @@ go
 
 Create table TbReservationPrices
 (
-DoctorID int ,
-ReservationTypeID int,
-Price decimal(9,2),
-primary key(DoctorID,ReservationTypeID),
-Flag char(1)
+	DoctorID int ,
+	ReservationTypeID int,
+	Price decimal(9,2),
+	primary key(DoctorID,ReservationTypeID),
+	Flag char(1)
 )
 go 
 
@@ -53,35 +53,36 @@ Alter table TbReservations
 add constraint fk_TbReservations_withhisType foreign key (ReservationTypeID) references 
 TbReservationTypes(ReservationTypeID)
 GO
-Alter table TbReservations
-add constraint fk_TbReservations_TbStaff FOREIGN KEY (StaffID) REFERENCES  TbStaffs(StaffID)
-GO
+-- Alter table TbReservations
+-- add constraint fk_TbReservations_TbStaff FOREIGN KEY (StaffID) REFERENCES  TbStaffs(StaffID)
+-- GO
 ALTER table TbReservations
-add constraint fk_TbReservations_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+add constraint fk_TbReservations_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbReservationPrices(DoctorID)
 go
 --patinent ID
--- table TbReservationPrice
+ALTER table TbReservations
+add constraint fk_TbReservations_TbPatients FOREIGN KEY (PatientID) REFERENCES TbPatients(PatientID)
+go
+-- table TbReservationPrices
 ----------------------------------------------
 ----------------------------------------------
-ALTER table TbReservationPrice
-add constraint fk_TbReservationPrice_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+ALTER table TbReservationPrices
+add constraint fk_TbReservationPrices_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
 GO
-ALTER table TbReservationPrice
-add constraint fk_TbReservationPrice_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+ALTER table TbReservationPrices
+add constraint fk_TbReservationPrices_TbReservationTypes FOREIGN KEY (ReservationTypeID) REFERENCES TbReservationTypes(ReservationTypeID)
+
 GO
-ALTER table TbReservationPrice
-add constraint fk_TbReservationPrice_TbReservationTypes FOREIGN KEY (ReservationTypeID) REFERENCES TbReservationTypes(ReservationTypeID)
-
-
 /*=============================================
 ---------------Reservation Proc--------------
 =============================================*/ 
 -----------Read All store procedure----------
 CREATE PROCEDURE Sp_ReservationsReadAll
-@Message TINYINT OUT
+@Message TINYINT OUT,
+@Flag CHAR(1) = 'A'
 AS
 BEGIN TRY   
-    SELECT * from TbReservations WHERE Flag not like 'D'
+    SELECT * from TbReservations WHERE Flag like @Flag and Flag NOT like 'D'
 END TRY
 
 BEGIN CATCH
@@ -96,15 +97,17 @@ END CATCH
 GO
 ---------------------------------------------
 -----------Read By ID store procedure----------
+
 Create PROCEDURE Sp_ReservationsReadByID
 @message TINYINT out,
-@ID int
+@ID int,
+@Flag CHAR(1) = 'A'
 AS
 
 BEGIN TRY
     IF EXISTS (SELECT ReservationTypeID FROM TbReservations WHERE ReservationID = @Id)
         BEGIN
-            SELECT * FROM TbReservations WHERE ReservationID = @Id AND Flag NOT LIKE 'D'
+            SELECT * FROM TbReservations WHERE ReservationID = @Id AND Flag NOT LIKE 'D' and Flag like @Flag 
             SELECT @Message = 1 
         END
     ELSE
@@ -127,6 +130,9 @@ END CATCH
 GO
 ---------------------------------------------
 -----------Insert store procedure----------
+SET ANSI_NULLS OFF
+GO
+
 Create PROCEDURE Sp_ReservationsInsert
 @Message TINYINT out,
 @DoctorID INT,
@@ -138,29 +144,23 @@ Create PROCEDURE Sp_ReservationsInsert
 @Flag CHAR(1) ='A'
 AS
 BEGIN TRY
-BEGIN TRANSACTION
-if NOT exists(select  ReservationTypeID from TbReservations WHERE ReservationTypeID =@TbReservationTypesID)
-BEGIN
-    IF @DoctorID <> 0 and @StaffID <>0 and @ReservationDate not in ('',' ',null)
-    BEGIN
+	BEGIN TRANSACTION
+			BEGIN
+				IF @DoctorID > 0 and @StaffID > 0 and @ReservationDate not in ('',' ',null)
+				BEGIN
 
-    INSERT into TbReservations (StaffID,PatientID,ReservationDate,ReservationCheck,ReservationTypeID,Flag)
-    VALUES(@StaffID,@PatientID,@ReservationDate,@ReservationCheck,@TbReservationTypesID,@Flag) 
-    END
-    ELSE
-    BEGIN 
-        SELECT @Message =0
+				INSERT into TbReservations (StaffID,PatientID,ReservationDate,ReservationCheck,ReservationTypeID,Flag)
+				VALUES(@StaffID,@PatientID,@ReservationDate,@ReservationCheck,@TbReservationTypesID,@Flag) 
+				END
+				ELSE
+				BEGIN 
+					SELECT @Message =0
 
-    END
+				END
 
-    
-END
-    ELSE
-    BEGIN
-            SELECT @Message=2
-    END
-
-COMMIT TRANSACTION
+				
+			END
+	COMMIT TRANSACTION
 END TRY 
 BEGIN CATCH
     IF @@ERROR <>0
@@ -173,6 +173,9 @@ END CATCH
 GO
 ---------------------------------------------
 -----------Update  store procedure----------
+SET ANSI_NULLS OFF
+GO
+
 CREATE PROCEDURE  Sp_ReservationsUpdate
 @Message TINYINT OUT,
 @ReservationID int,
@@ -188,7 +191,7 @@ BEGIN TRY
 BEGIN TRANSACTION
 if exists ( select ReservationID from TbReservations WHERE ReservationID =@ReservationID)
 BEGIN 
-if @ReservationID <>0 and @StaffID <>0 and @PatientID <>0 and @ReservationTypes <>0
+if @ReservationID >0 and @StaffID >0 and @PatientID >0 and @ReservationTypes <>0
 	begin
 						update TbReservations
                         set	[StaffID]=@StaffID,
@@ -216,9 +219,8 @@ END CATCH
 
 GO
 -------Delete Store procedure-------------- 
-GO
 
-create procedure Sp_revservationsDelete 
+create procedure Sp_ReservationsDelete 
 @Message tinyint out,
 @ID int
 as 
@@ -295,6 +297,9 @@ END CATCH
 
 GO
 -------Insert Store Procedure--------------
+SET ANSI_NULLS OFF
+GO
+
 create procedure Sp_ReservationTypesInsert
 @message tinyint out,
 @Type NVARCHAR(50) ,
@@ -335,7 +340,7 @@ go
 SET ANSI_NULLS OFF
 GO
 
-create procedure Sp_reservationTypesUpdate
+create procedure Sp_ReservationTypesUpdate
 @Message tinyint out ,
 @ID int ,
 @Type NVARCHAR(50) ,
@@ -376,7 +381,7 @@ go
 SET ANSI_NULLS OFF
 GO
 
-create procedure Sp_reserationtypesDelete 
+create procedure Sp_ReservationTypesDelete 
 @Message tinyint out,
 @ID int
 as 
@@ -406,15 +411,15 @@ go
 
 /*
 ======================================
-    TbReservationPrices Proc
+    TbReservationPricess Proc
 ======================================
 */ 
 -------------Read all Store Procedure-----------------------
-CREATE PROCEDURE Sp_revservationsPriceReadALL 
+CREATE PROCEDURE Sp_RevservationPricesReadALL 
 @Message TINYINT OUT -- 1 -> Done, 3 -> ERROR
 AS
 BEGIN TRY
-    SELECT * FROM TbReservationPrice WHERE Flag NOT LIKE 'D'
+    SELECT * FROM TbReservationPrices WHERE Flag NOT LIKE 'D'
     SELECT @Message = 1
 END TRY 
 BEGIN CATCH
@@ -426,15 +431,15 @@ BEGIN CATCH
 END CATCH
 GO
 -------------Read By Id Store Procedure---------------------
-create procedure Sp_revservationsPriceReadByID
+create procedure Sp_ReservationPricesReadByID
 @DoctorID INT,
 @ReservationTypeID int,
 @Message TINYINT OUT--> 0 ==> NULL VALUE, 1 ==> DONE, 3 ==> ERROR
 AS
 BEGIN TRY
-    IF EXISTS (SELECT DoctorID FROM TbReservationPrice WHERE DoctorID = @DoctorID)
+    IF EXISTS (SELECT DoctorID FROM TbReservationPrices WHERE DoctorID = @DoctorID)
         BEGIN
-            SELECT * FROM TbReservationPrice WHERE DoctorID = @DoctorID AND Flag NOT LIKE 'D'
+            SELECT * FROM TbReservationPrices WHERE DoctorID = @DoctorID AND Flag NOT LIKE 'D'
             SELECT @Message = 1 
         END
     ELSE
@@ -453,32 +458,32 @@ END CATCH
 GO
 -------Insert Store Procedure--------------
 
-create procedure Sp_reserationpriceInsert
+SET ANSI_NULLS OFF
+GO
+
+create procedure Sp_ReservationPricesInsert
 @message tinyint out,
 @DoctorID int,
+@Price DECIMAL(9,2),
 @ReservationTypeID int,
 @Flag CHAR(1) = 'A'
 
 as
 begin try
 	begin transaction
-		if not exists(select [DoctorID] from TbReservationPrice where [DoctorID]=@DoctorID)
    			begin
-	   				if @DoctorID NOT IN('', ' ', NULL) and @ReservationTypeID not in ('',' ', null)
-						begin
-   							insert into TbReservationPrice (DoctorID,ReservationTypeID, Flag)
-                                values (@DoctorID,@ReservationTypeID, @Flag) select @message= 1 
-						end
-		  			else
-						begin 
-   							select @message =0
-   						end
+				if @DoctorID NOT IN('', ' ', NULL) and @ReservationTypeID not in ('',' ', null)
+					begin
+						insert into TbReservationPrices (DoctorID,ReservationTypeID, Flag, Price)
+							values (@DoctorID,@ReservationTypeID, @Flag, @Price) 
+							select @message= 1 
+					end
+				else
+					begin 
+						select @message =0
+					end
 
    			end
-	   else
-			begin
-				select @message =2
-			end
    	COMMIT TRANSACTION
 end try
 begin catch
@@ -491,22 +496,27 @@ begin catch
 end catch
 go
 -------Update Store procedure-------------- 
-create procedure Sp_reserationpriceUpdate
+
+SET ANSI_NULLS OFF
+GO
+
+create procedure Sp_ReservationPricesUpdate
 @Message tinyint out ,
 @DoctorID int,
+@Price DECIMAL(9,2),
 @ReservationTypeID int,
 
 @Flag Char(1)
 as 
 Begin try 
 	begin transaction 
-		if exists (select  DoctorID from TbReservationPrice where  [DoctorID] = @DoctorID )	
 			begin 
 				if @DoctorID <> 0 and @DoctorID not in ('',' ',null) and @ReservationTypeID <>0
 
------here when have proglam when i update ,update by DocotrID OR REservatioTYpeID
+					-----here when have proglam when i update ,update by DocotrID OR REservatioTYpeID
+					
 					begin
-						update TbReservationPrice 	set	[ReservationTypeID]=@ReservationTypeID, 
+						update TbReservationPrices 	set	[ReservationTypeID]=@ReservationTypeID, 
                         Flag = @Flag	where DoctorID = @DoctorID
 						select @Message =1
 					end
@@ -515,10 +525,6 @@ Begin try
 						select @Message =0 
 					end
 	 
-	 		end
-		 else 
-	 		begin
-			 	select @Message =2
 	 		end
 	COMMIT TRANSACTION
 end try
@@ -536,15 +542,16 @@ go
 SET ANSI_NULLS OFF
 GO
 
-create procedure Sp_AttendaceDayDelete 
+create procedure Sp_ReservationPricesDelete
 @Message tinyint out,
-@DoctorID int
+@DoctorID int,
+@ReservationTypeID int
 as 
 Begin Try
 	begin transaction 
-		if  exists (select DoctorID from TbReservationPrice where DoctorID =@DoctorID)	
+		if  exists (select DoctorID, ReservationTypeID from TbReservationPrices where DoctorID =@DoctorID and ReservationTypeID = @ReservationTypeID)	
 			begin
-	 			update TbReservationPrice set Flag = 'D' where DoctorID =@DoctorID
+	 			update TbReservationPrices set Flag = 'D' where DoctorID =@DoctorID
 	 			select @Message =1 
 	 		end 
 	 	else 
@@ -562,13 +569,4 @@ begin catch
 	end
 end catch
 go
-
-
----------------------------------------------
---message
-/*
-there are many constraints with another tables but these table 
-are not exist in this model we should create these tables or 
-connected with this 
-*/
 
