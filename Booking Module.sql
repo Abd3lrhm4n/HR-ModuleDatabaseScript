@@ -38,6 +38,7 @@ Create table TbReservationPrices
 (
 DoctorID int ,
 ReservationTypeID int,
+Price decimal(9,2),
 primary key(DoctorID,ReservationTypeID),
 Flag char(1)
 )
@@ -47,11 +48,30 @@ go
 ----------------------------------------------
 ----------------------------------------------
 --add constraint
+-- table TbReservations
 Alter table TbReservations
 add constraint fk_TbReservations_withhisType foreign key (ReservationTypeID) references 
 TbReservationTypes(ReservationTypeID)
-
 GO
+Alter table TbReservations
+add constraint fk_TbReservations_TbStaff FOREIGN KEY (StaffID) REFERENCES  TbStaffs(StaffID)
+GO
+ALTER table TbReservations
+add constraint fk_TbReservations_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+go
+--patinent ID
+-- table TbReservationPrice
+----------------------------------------------
+----------------------------------------------
+ALTER table TbReservationPrice
+add constraint fk_TbReservationPrice_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+GO
+ALTER table TbReservationPrice
+add constraint fk_TbReservationPrice_TbDoctor FOREIGN KEY (DoctorID) REFERENCES TbDoctors(DoctorID)
+GO
+ALTER table TbReservationPrice
+add constraint fk_TbReservationPrice_TbReservationTypes FOREIGN KEY (ReservationTypeID) REFERENCES TbReservationTypes(ReservationTypeID)
+
 
 /*=============================================
 ---------------Reservation Proc--------------
