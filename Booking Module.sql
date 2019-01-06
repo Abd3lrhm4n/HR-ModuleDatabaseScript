@@ -34,7 +34,7 @@ go
 ---------------Reservation Prices---------------
 --==============================================
 
-Create table TbReservationPrice
+Create table TbReservationPrices
 (
 DoctorID int ,
 ReservationTypeID int,

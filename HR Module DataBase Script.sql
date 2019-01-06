@@ -2655,16 +2655,10 @@ create procedure Sp_TakeVacationsUpdate
 @ID int ,
 @Message tinyint out,
 @DataTacked date,
-<<<<<<< HEAD
 @EmployeeVacationID int,
 @From datetime,
 @To datetime,
 @Flag char(1) ='A'
-=======
-@VacationTypeID int,
-@EmployeeID int,
-@Flag char(1)
->>>>>>> 8b05d6e6fa65a342f7eef7db828b1fcc2121d41a
 as
 begin try
 	begin transaction
@@ -2672,11 +2666,7 @@ begin try
 			begin
 				if @ID <> 0 and @DataTacked not in ('',' ',null)and @Flag not in ('',' ',null ) and @EmployeeVacationID not in ('',' ',null)and @From not in ('',' ',null)
 					begin
-<<<<<<< HEAD
 						update TbTakeVacations set [DateTacked] =@DataTacked, EmployeeVacationID=@EmployeeVacationID,[From]=@From,[To]=@To, Flag = @Flag where TakeVacationsID =@ID
-=======
-						update TbTakeVacations set [DateTacked] =@DataTacked, VacationTypeID=@VacationTypeID, [EmployeeID]=@EmployeeID, Flag = @Flag where TakeVacationID =@ID
->>>>>>> 8b05d6e6fa65a342f7eef7db828b1fcc2121d41a
 					end 
 				else
 					begin
